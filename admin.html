@@ -2,130 +2,194 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>صفحة المشرف - مدارس الفلاح الأهلية</title>
+    <title>لوحة المشرف - مدارس الفلاح الأهلية</title>
     <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
     <style>
-        body { font-family: Calibri; background: #f4f4f4; margin: 0; padding: 20px; }
-        .header { background: #1976d2; color: #fff; padding: 15px; text-align: center; }
-        .header h1 { margin: 0; font-size: 26px; }
-        .header h2 { margin: 5px 0; font-size: 20px; color: #ffeb3b; }
-        .container { max-width: 900px; margin: 20px auto; padding: 20px; }
-        .btn { padding: 10px 20px; font-size: 16px; margin: 10px; background-color: #1976d2; color: white; border: none; cursor: pointer; }
-        .btn:hover { background-color: #1565c0; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 18px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
-        th { background-color: #1976d2; color: white; }
-        .result { margin-top: 20px; }
+        body{
+            font-family: Calibri;
+            background:#f4f4f4;
+            margin:0;
+        }
+        .header{
+            background:#1976d2;color:#fff;
+            padding:15px;text-align:center;
+        }
+        .header h1{margin:0;font-size:26px;}
+        .header h2{margin:5px 0 0;font-size:20px;color:#ffeb3b;}
+        .container{
+            max-width:1100px;margin:20px auto;padding:10px;
+        }
+        .box{
+            background:#fff;border-radius:10px;
+            padding:15px;margin-bottom:15px;
+            box-shadow:0 0 8px rgba(0,0,0,0.1);
+        }
+        .box h3{margin-top:0;color:#1976d2;}
+        input,select,button{
+            font-family:Calibri;
+            font-size:16px;
+            padding:8px;
+            margin:5px 0;
+            border-radius:6px;
+            border:1px solid #999;
+        }
+        input,select{width:100%;box-sizing:border-box;}
+        button{
+            cursor:pointer;border:none;
+            font-weight:bold;
+        }
+        .btn-primary{background:#1976d2;color:#fff;}
+        .btn-danger{background:#d32f2f;color:#fff;}
+        .btn-secondary{background:#757575;color:#fff;}
+        .btn-save-marks{
+            width:100%;padding:12px;
+            margin-top:10px;font-size:18px;
+            border-radius:10px;
+            background:#388e3c;color:#fff;
+        }
+        .row{
+            display:flex;flex-wrap:wrap;gap:10px;
+        }
+        .col-3{flex:1 1 23%;}
+        .col-4{flex:1 1 30%;}
+        .col-6{flex:1 1 48%;}
+        .col-12{flex:1 1 100%;}
+        @media(max-width:768px){
+            .col-3,.col-4,.col-6{flex:1 1 100%;}
+        }
+        table{
+            width:100%;border-collapse:collapse;
+            margin-top:10px;font-size:14px;
+        }
+        th,td{
+            border:1px solid #000;
+            text-align:center;
+            padding:6px;
+        }
+        th{
+            background:#1976d2;color:#fff;
+        }
+        .mark-input{
+            width:70px;
+        }
+        .rating-cell{
+            font-weight:bold;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>مدارس الفلاح الأهلية</h1>
-        <h2>قسم اللغة الإنجليزية</h2>
-    </div>
 
-    <div class="container">
-        <h3>صفحة المشرف</h3>
-        <label>أدخل كود الطالب:</label>
-        <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
-        <button class="btn" onclick="loadStudentData()">عرض بيانات الطالب</button>
+<div class="header">
+    <h1>مدارس الفلاح الأهلية</h1>
+    <h2>قسم اللغة الإنجليزية - لوحة المشرف</h2>
+</div>
 
-        <div class="result" id="studentData" style="display: none;">
-            <table>
-                <tr><th>اسم الطالب</th><td id="studentName"></td></tr>
-                <tr><th>الصف</th><td id="studentGrade"></td></tr>
-                <tr><th>المادة</th><td id="subject"></td></tr>
-                <tr><th>درجة الطالب</th><td id="studentMark"></td></tr>
-                <tr><th>الدرجة النهائية</th><td id="finalMark"></td></tr>
-                <tr><th>التقدير</th><td id="rating"></td></tr>
-            </table>
+<div class="container">
+
+    <div class="box">
+        <h3>تسجيل / تعديل بيانات الطالب</h3>
+        <div class="row">
+            <div class="col-3">
+                <label>كود الطالب</label>
+                <input id="st_code" placeholder="مثال: 1001">
+            </div>
+            <div class="col-3">
+                <label>اسم الطالب</label>
+                <input id="st_name" placeholder="اسم الطالب">
+            </div>
+            <div class="col-3">
+                <label>الصف</label>
+                <select id="st_grade"></select>
+            </div>
+            <div class="col-3">
+                <label>الشعبة</label>
+                <select id="st_section"></select>
+            </div>
+
+            <div class="col-4">
+                <label>اسم المعلم</label>
+                <input id="st_teacher" placeholder="اسم المعلم">
+            </div>
+            <div class="col-4">
+                <label>نوع الاختبار</label>
+                <input id="st_examType" placeholder="نهائي / فترة / قصير">
+            </div>
+            <div class="col-4">
+                <label>الدرجة النهائية</label>
+                <input id="st_fullMark" type="number" placeholder="مثال: 20">
+            </div>
         </div>
 
-        <button class="btn" onclick="saveStudent()">حفظ بيانات الطالب</button>
+        <div class="row">
+            <div class="col-6">
+                <button class="btn-primary" onclick="saveStudent()">حفظ / تحديث الطالب</button>
+            </div>
+            <div class="col-6">
+                <button class="btn-secondary" onclick="clearForm()">تفريغ النموذج</button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        // إعدادات Firebase
-        var firebaseConfig = {
-            apiKey: "AIzaSyCX-KNQTu0Y1tnTGWd1sKtXLDUmR7Tehek",
-            authDomain: "english-results.firebaseapp.com",
-            projectId: "english-results",
-            storageBucket: "english-results.firebasestorage.app",
-            messagingSenderId: "673616902884",
-            appId: "1:673616902884:web:62c38d39a3c1a0694a4af1"
-        };
-        firebase.initializeApp(firebaseConfig);
-        var db = firebase.firestore();
+    <div class="box">
+        <h3>كشف الطلاب ورصد الدرجات</h3>
+        <div class="row">
+            <div class="col-3">
+                <label>الصف</label>
+                <select id="filter_grade"></select>
+            </div>
+            <div class="col-3">
+                <label>الشعبة</label>
+                <select id="filter_section"></select>
+            </div>
+            <div class="col-3">
+                <label>بحث بالكود</label>
+                <input id="filter_code" placeholder="كود الطالب">
+            </div>
+            <div class="col-3">
+                <label>بحث بالاسم</label>
+                <input id="filter_name" placeholder="جزء من الاسم">
+            </div>
+        </div>
 
-        // دالة لحساب التقدير بناءً على درجة الطالب
-        function calculateRating(mark, fullMark) {
-            var percentage = (mark / fullMark) * 100;
-            if (percentage >= 90) return "ممتاز";
-            if (percentage >= 80) return "جيد جداً";
-            if (percentage >= 70) return "جيد";
-            if (percentage >= 60) return "مقبول";
-            return "ضعيف";
-        }
+        <div class="row">
+            <div class="col-4">
+                <button class="btn-primary" onclick="loadStudents()">عرض كشف الطلاب</button>
+            </div>
+            <div class="col-4">
+                <button class="btn-secondary" onclick="reloadAll()">تحديث البيانات من السحابة</button>
+            </div>
+        </div>
 
-        // دالة لتحميل بيانات الطالب
-        function loadStudentData() {
-            var code = document.getElementById("studentCode").value.trim();
-            if (!code) {
-                alert("الرجاء إدخال كود الطالب");
-                return;
-            }
+        <table id="students_table">
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>اسم الطالب</th>
+                    <th>الصف</th>
+                    <th>الشعبة</th>
+                    <th>المعلم</th>
+                    <th>نوع الاختبار</th>
+                    <th>الدرجة النهائية</th>
+                    <th>درجة الطالب</th>
+                    <th>التقدير</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="students_body">
+            </tbody>
+        </table>
 
-            // جلب بيانات الطالب من Firebase بناءً على الكود
-            db.collection("students").doc(code).get().then(function(doc) {
-                if (doc.exists) {
-                    var studentData = doc.data();
-                    document.getElementById("studentName").innerText = studentData.name || "غير متوفر";
-                    document.getElementById("studentGrade").innerText = studentData.grade || "غير متوفر";
-                    document.getElementById("subject").innerText = studentData.subject || "غير متوفر";  // إضافة المادة هنا
-                    document.getElementById("studentMark").innerText = studentData.mark || "غير متوفر";
-                    document.getElementById("finalMark").innerText = studentData.fullMark || "غير متوفر";
-                    document.getElementById("rating").innerText = calculateRating(studentData.mark, studentData.fullMark);
-                    document.getElementById("studentData").style.display = "block";
-                } else {
-                    alert("الطالب غير موجود");
-                }
-            }).catch(function(error) {
-                console.error("خطأ في جلب البيانات: ", error);
-            });
-        }
+        <button class="btn-save-marks" onclick="saveAllMarks()">حفظ جميع الدرجات</button>
+    </div>
+</div>
 
-        // دالة لحفظ بيانات الطالب
-        function saveStudent() {
-            var code = document.getElementById("studentCode").value.trim();
-            var name = document.getElementById("studentName").innerText;
-            var grade = document.getElementById("studentGrade").innerText;
-            var subject = document.getElementById("subject").innerText;
-            var mark = document.getElementById("studentMark").innerText;
-            var fullMark = document.getElementById("finalMark").innerText;
+<script>
+// أكواد Firebase و JavaScript هنا
+</script>
 
-            if (!name || !grade || !subject || !mark || !fullMark) {
-                alert("برجاء إدخال كافة البيانات");
-                return;
-            }
-
-            var studentData = {
-                name: name,
-                grade: grade,
-                subject: subject,
-                mark: mark,
-                fullMark: fullMark
-            };
-
-            db.collection("students").doc(code).set(studentData, { merge: true })
-            .then(function() {
-                alert("تم حفظ بيانات الطالب");
-            }).catch(function(error) {
-                console.error("خطأ في حفظ البيانات: ", error);
-            });
-        }
-    </script>
 </body>
 </html>
