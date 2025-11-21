@@ -77,6 +77,9 @@
     <label>أدخل كود الطالب:</label>
     <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
 
+    <label>أدخل اسم الطالب:</label>
+    <input id="studentName" type="text" placeholder="أدخل اسم الطالب هنا">
+
     <label>أدخل المادة:</label>
     <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
 
@@ -92,6 +95,9 @@
     <label>أدخل الصف:</label>
     <input id="studentGrade" type="text" placeholder="أدخل الصف">
 
+    <label>أدخل الشعبة:</label>
+    <input id="studentSection" type="text" placeholder="أدخل الشعبة">
+
     <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
 
     <h3>كشف الطلاب ورصد الدرجات</h3>
@@ -104,6 +110,7 @@
                 <th>الكود</th>
                 <th>اسم الطالب</th>
                 <th>الصف</th>
+                <th>الشعبة</th>
                 <th>المادة</th>
                 <th>الدرجة النهائية</th>
                 <th>درجة الطالب</th>
@@ -133,13 +140,15 @@
     // دالة لحفظ بيانات الطالب
     function saveStudentData() {
         var studentCode = document.getElementById("studentCode").value.trim();
+        var studentName = document.getElementById("studentName").value.trim();
         var subjectInput = document.getElementById("subjectInput").value.trim();
         var examTypeInput = document.getElementById("examTypeInput").value.trim();
         var fullMarkInput = document.getElementById("fullMarkInput").value.trim();
         var studentMarkInput = document.getElementById("studentMarkInput").value.trim();
         var studentGrade = document.getElementById("studentGrade").value.trim();
+        var studentSection = document.getElementById("studentSection").value.trim();
 
-        if (!studentCode || !subjectInput || !examTypeInput || !fullMarkInput || !studentMarkInput || !studentGrade) {
+        if (!studentCode || !studentName || !subjectInput || !examTypeInput || !fullMarkInput || !studentMarkInput || !studentGrade || !studentSection) {
             alert("الرجاء إدخال جميع البيانات");
             return;
         }
@@ -149,13 +158,14 @@
         // التحقق من وجود الطالب في Firebase
         studentRef.get().then(function(doc) {
             if (doc.exists) {
-                // تحديث بيانات الطالب
                 studentRef.update({
+                    name: studentName,
                     subject: subjectInput,
                     examType: examTypeInput,
                     fullMark: Number(fullMarkInput),
                     mark: Number(studentMarkInput),
-                    grade: studentGrade
+                    grade: studentGrade,
+                    section: studentSection
                 }).then(function() {
                     alert("تم حفظ البيانات بنجاح");
                     loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
@@ -164,13 +174,14 @@
                     console.error(error);
                 });
             } else {
-                // إذا لم يكن الطالب موجودًا، نقوم بإضافته
                 studentRef.set({
+                    name: studentName,
                     subject: subjectInput,
                     examType: examTypeInput,
                     fullMark: Number(fullMarkInput),
                     mark: Number(studentMarkInput),
-                    grade: studentGrade
+                    grade: studentGrade,
+                    section: studentSection
                 }).then(function() {
                     alert("تم إضافة بيانات الطالب بنجاح");
                     loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
@@ -198,6 +209,7 @@
                     <td>${doc.id}</td> <!-- عرض الكود هنا -->
                     <td>${student.name}</td>
                     <td>${student.grade}</td>
+                    <td>${student.section}</td>
                     <td>${student.subject}</td>
                     <td>${student.fullMark}</td>
                     <td>${student.mark}</td>
@@ -219,11 +231,13 @@
         studentRef.get().then(function(doc) {
             var student = doc.data();
             document.getElementById("studentCode").value = doc.id;
+            document.getElementById("studentName").value = student.name;
             document.getElementById("subjectInput").value = student.subject;
             document.getElementById("examTypeInput").value = student.examType;
             document.getElementById("fullMarkInput").value = student.fullMark;
             document.getElementById("studentMarkInput").value = student.mark;
             document.getElementById("studentGrade").value = student.grade;
+            document.getElementById("studentSection").value = student.section;
         });
     }
 
