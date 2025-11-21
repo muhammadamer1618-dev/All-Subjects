@@ -89,6 +89,9 @@
     <label>أدخل درجة الطالب:</label>
     <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
 
+    <label>أدخل الصف:</label> <!-- إضافة خانة الصف هنا -->
+    <input id="studentGrade" type="text" placeholder="أدخل الصف">
+
     <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
 
     <h3>كشف الطلاب ورصد الدرجات</h3>
@@ -98,6 +101,7 @@
     <table id="studentsTable">
         <thead>
             <tr>
+                <th>الكود</th> <!-- إضافة خانة الكود هنا -->
                 <th>اسم الطالب</th>
                 <th>الصف</th>
                 <th>المادة</th>
@@ -110,6 +114,8 @@
             <!-- يتم إدراج بيانات الطلاب هنا -->
         </tbody>
     </table>
+
+    <button onclick="location='index.html'" class="btn">العودة للصفحة الرئيسية</button> <!-- إضافة زر العودة -->
 </div>
 
 <script>
@@ -131,8 +137,9 @@
         var examTypeInput = document.getElementById("examTypeInput").value.trim();
         var fullMarkInput = document.getElementById("fullMarkInput").value.trim();
         var studentMarkInput = document.getElementById("studentMarkInput").value.trim();
+        var studentGrade = document.getElementById("studentGrade").value.trim();
 
-        if (!studentCode || !subjectInput || !examTypeInput || !fullMarkInput || !studentMarkInput) {
+        if (!studentCode || !subjectInput || !examTypeInput || !fullMarkInput || !studentMarkInput || !studentGrade) {
             alert("الرجاء إدخال جميع البيانات");
             return;
         }
@@ -145,7 +152,8 @@
                     subject: subjectInput,
                     examType: examTypeInput,
                     fullMark: Number(fullMarkInput),
-                    mark: Number(studentMarkInput)
+                    mark: Number(studentMarkInput),
+                    grade: studentGrade
                 }).then(function() {
                     alert("تم حفظ البيانات بنجاح");
                     loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
@@ -172,6 +180,7 @@
                 var student = doc.data();
                 var row = document.createElement("tr");
                 row.innerHTML = `
+                    <td>${studentCode}</td>
                     <td>${student.name}</td>
                     <td>${student.grade}</td>
                     <td>${student.subject}</td>
@@ -199,6 +208,7 @@
             document.getElementById("examTypeInput").value = student.examType;
             document.getElementById("fullMarkInput").value = student.fullMark;
             document.getElementById("studentMarkInput").value = student.mark;
+            document.getElementById("studentGrade").value = student.grade;
         });
     }
 
