@@ -7,14 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: Calibri; background: #f4f4f4; margin: 0; padding: 20px; }
-        .header { background: #1976d2; color: #fff; padding: 15px; text-align: center; }
-        .header h1 { margin: 0; font-size: 26px; }
-        .header h2 { margin: 5px 0; font-size: 20px; color: #ffeb3b; }
-        .container { max-width: 1100px; margin: 20px auto; padding: 10px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
-        button { padding: 10px 20px; font-size: 16px; background-color: #1976d2; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #1565c0; }
+        /* التنسيق الخاص بك */
     </style>
 </head>
 <body>
@@ -28,7 +21,7 @@
     <h3>إدخال بيانات الطالب</h3>
     <label>أدخل كود الطالب:</label>
     <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
-
+    
     <label>أدخل المادة:</label>
     <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
 
@@ -45,7 +38,6 @@
 </div>
 
 <script>
-    // إعداد Firebase
     var firebaseConfig = {
         apiKey: "AIzaSyCX-KNQTu0Y1tnTGWd1sKtXLDUmR7Tehek",
         authDomain: "english-results.firebaseapp.com",
@@ -57,7 +49,6 @@
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 
-    // دالة لحفظ بيانات الطالب
     function saveStudentData() {
         var studentCode = document.getElementById("studentCode").value.trim();
         var subjectInput = document.getElementById("subjectInput").value.trim();
@@ -70,7 +61,6 @@
             return;
         }
 
-        // جلب البيانات من Firebase باستخدام الكود
         var studentRef = db.collection("students").doc(studentCode);
 
         studentRef.get().then(function(doc) {
