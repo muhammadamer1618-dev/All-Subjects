@@ -86,6 +86,30 @@
     <input id="studentSection" type="text" placeholder="أدخل الشعبة">
 
     <button onclick="saveStudentData()" class="btn">حفظ بيانات الطالب</button>
+
+    <h3>كشف الطلاب ورصد الدرجات</h3>
+
+    <button onclick="loadStudents()" class="btn">عرض جميع الطلاب</button>
+
+    <table id="studentsTable">
+        <thead>
+            <tr>
+                <th>الكود</th>
+                <th>اسم الطالب</th>
+                <th>الصف</th>
+                <th>الشعبة</th>
+                <th>المادة</th>
+                <th>الدرجة النهائية</th>
+                <th>درجة الطالب</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="studentsBody">
+            <!-- سيتم إدراج بيانات الطلاب هنا -->
+        </tbody>
+    </table>
+
+    <button onclick="location='index.html'" class="btn">العودة للصفحة الرئيسية</button>
 </div>
 
 <script>
@@ -129,6 +153,50 @@
             alert("حدث خطأ أثناء حفظ البيانات");
             console.error(error);
         });
+    }
+
+    // دالة لعرض جميع الطلاب
+    function loadStudents() {
+        var tbody = document.getElementById("studentsBody");
+        tbody.innerHTML = "";  // تفريغ الجدول قبل إضافة البيانات
+
+        db.collection("students").get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                var student = doc.data();
+                var row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${doc.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.grade}</td>
+                    <td>${student.section}</td>
+                    <td>${student.subject}</td>
+                    <td>${student.fullMark}</td>
+                    <td>${student.mark}</td>
+                    <td>
+                        <button class="btn" onclick="editStudent('${doc.id}')">تعديل</button>
+                        <button class="btn" onclick="deleteStudent('${doc.id}')">حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }).catch(function(error) {
+            console.error("Error getting documents: ", error);
+        });
+    }
+
+    function editStudent(studentId) {
+        // يمكن إضافة وظائف لتعديل درجة الطالب هنا إذا كنت تريد
+    }
+
+    function deleteStudent(studentId) {
+        if (confirm("هل تريد حذف هذا الطالب؟")) {
+            db.collection("students").doc(studentId).delete().then(function() {
+                alert("تم حذف الطالب");
+                loadStudents(); // إعادة تحميل الطلاب بعد الحذف
+            }).catch(function(error) {
+                console.error("Error removing document: ", error);
+            });
+        }
     }
 </script>
 
