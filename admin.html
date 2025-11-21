@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة المشرف - مدارس الفلاح الأهلية</title>
+    <title>صفحة المشرف - مدارس الفلاح الأهلية</title>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
@@ -90,6 +90,26 @@
     <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
 
     <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
+
+    <h3>كشف الطلاب ورصد الدرجات</h3>
+
+    <button onclick="loadStudents()">عرض جميع الطلاب</button>
+
+    <table id="studentsTable">
+        <thead>
+            <tr>
+                <th>اسم الطالب</th>
+                <th>الصف</th>
+                <th>المادة</th>
+                <th>الدرجة النهائية</th>
+                <th>درجة الطالب</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody id="studentsBody">
+            <!-- يتم إدراج بيانات الطلاب هنا -->
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -104,6 +124,7 @@
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 
+    // دالة لحفظ بيانات الطالب
     function saveStudentData() {
         var studentCode = document.getElementById("studentCode").value.trim();
         var subjectInput = document.getElementById("subjectInput").value.trim();
@@ -127,6 +148,7 @@
                     mark: Number(studentMarkInput)
                 }).then(function() {
                     alert("تم حفظ البيانات بنجاح");
+                    loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
                 }).catch(function(error) {
                     alert("حدث خطأ أثناء حفظ البيانات");
                     console.error(error);
@@ -138,6 +160,58 @@
             console.error("خطأ في جلب بيانات الطالب: ", error);
             alert("حدث خطأ أثناء جلب بيانات الطالب");
         });
+    }
+
+    // دالة لعرض جميع الطلاب
+    function loadStudents() {
+        var tbody = document.getElementById("studentsBody");
+        tbody.innerHTML = "";  // تفريغ الجدول قبل إضافة البيانات
+
+        db.collection("students").get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+                var student = doc.data();
+                var row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.grade}</td>
+                    <td>${student.subject}</td>
+                    <td>${student.fullMark}</td>
+                    <td>${student.mark}</td>
+                    <td>
+                        <button onclick="editStudent('${doc.id}')">تعديل</button>
+                        <button onclick="deleteStudent('${doc.id}')">حذف</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }).catch(function(error) {
+            console.error("Error getting documents: ", error);
+        });
+    }
+
+    // دالة لتعديل بيانات الطالب
+    function editStudent(studentId) {
+        var studentRef = db.collection("students").doc(studentId);
+        studentRef.get().then(function(doc) {
+            var student = doc.data();
+            document.getElementById("studentCode").value = doc.id;
+            document.getElementById("subjectInput").value = student.subject;
+            document.getElementById("examTypeInput").value = student.examType;
+            document.getElementById("fullMarkInput").value = student.fullMark;
+            document.getElementById("studentMarkInput").value = student.mark;
+        });
+    }
+
+    // دالة لحذف الطالب
+    function deleteStudent(studentId) {
+        if (confirm("هل تريد حذف هذا الطالب؟")) {
+            db.collection("students").doc(studentId).delete().then(function() {
+                alert("تم حذف الطالب");
+                loadStudents(); // إعادة تحميل الطلاب بعد الحذف
+            }).catch(function(error) {
+                console.error("Error removing document: ", error);
+            });
+        }
     }
 </script>
 
