@@ -8,22 +8,20 @@
 
     <style>
         body {
-            font-family: Calibri, sans-serif;
-            background: #f5f5f5;
+            font-family: Calibri;
+            background: #f4f4f4;
             margin: 0;
             padding: 20px;
         }
         .header {
             background: #1976d2;
-            color: white;
-            padding: 20px;
+            color: #fff;
+            padding: 15px;
             text-align: center;
-            border-radius: 10px;
-            margin-bottom: 20px;
         }
         .header h1 {
             margin: 0;
-            font-size: 30px;
+            font-size: 26px;
         }
         .header h2 {
             margin: 5px 0;
@@ -31,97 +29,38 @@
             color: #ffeb3b;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 10px;
         }
-        .form-group {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .form-group label {
+        .btn {
+            padding: 10px 20px;
             font-size: 16px;
-            font-weight: bold;
-            color: #555;
-            width: 100%;
-        }
-        .form-group input, .form-group select {
-            width: 48%;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-top: 5px;
-        }
-        .form-group input[type="number"] {
-            width: 23%;
-        }
-        .form-group button {
-            width: 48%;
-            padding: 14px;
-            font-size: 16px;
-            border-radius: 8px;
+            margin: 10px;
+            background-color: #1976d2;
+            color: white;
             border: none;
             cursor: pointer;
-            margin-top: 20px;
         }
-        .btn-primary {
-            background: #1976d2;
-            color: white;
+        .btn:hover {
+            background-color: #1565c0;
         }
-        .btn-primary:hover {
-            background: #1565c0;
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
         }
-        .btn-secondary {
-            background: #757575;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #616161;
-        }
-        .students-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px;
+            margin-top: 20px;
         }
-        .students-table th, .students-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
             text-align: center;
-        }
-        .students-table th {
-            background: #1976d2;
-            color: white;
-        }
-        .students-table td button {
-            padding: 5px 10px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 6px;
-            margin-top: 5px;
-        }
-        .students-table .btn-edit {
-            background-color: #4caf50;
-            color: white;
-        }
-        .students-table .btn-edit:hover {
-            background-color: #388e3c;
-        }
-        .students-table .btn-delete {
-            background-color: #f44336;
-            color: white;
-        }
-        .students-table .btn-delete:hover {
-            background-color: #d32f2f;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
         }
     </style>
 </head>
@@ -135,57 +74,37 @@
 <div class="container">
     <h3>تسجيل / تعديل بيانات الطالب</h3>
 
-    <div class="form-group">
-        <div class="col">
-            <label for="studentCode">أدخل كود الطالب:</label>
-            <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
-        </div>
-        <div class="col">
-            <label for="studentName">أدخل اسم الطالب:</label>
-            <input id="studentName" type="text" placeholder="أدخل اسم الطالب هنا">
-        </div>
-    </div>
+    <label>أدخل كود الطالب:</label>
+    <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
 
-    <div class="form-group">
-        <div class="col">
-            <label for="subjectInput">أدخل المادة:</label>
-            <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
-        </div>
-        <div class="col">
-            <label for="examTypeInput">أدخل نوع الاختبار:</label>
-            <input id="examTypeInput" type="text" placeholder="نوع الاختبار">
-        </div>
-    </div>
+    <label>أدخل اسم الطالب:</label>
+    <input id="studentName" type="text" placeholder="أدخل اسم الطالب هنا">
 
-    <div class="form-group">
-        <div class="col">
-            <label for="fullMarkInput">أدخل الدرجة النهائية:</label>
-            <input id="fullMarkInput" type="number" placeholder="أدخل الدرجة النهائية">
-        </div>
-        <div class="col">
-            <label for="studentMarkInput">أدخل درجة الطالب:</label>
-            <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
-        </div>
-    </div>
+    <label>أدخل المادة:</label>
+    <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
 
-    <div class="form-group">
-        <div class="col">
-            <label for="studentGrade">أدخل الصف:</label>
-            <input id="studentGrade" type="text" placeholder="أدخل الصف">
-        </div>
-        <div class="col">
-            <label for="studentSection">أدخل الشعبة:</label>
-            <input id="studentSection" type="text" placeholder="أدخل الشعبة">
-        </div>
-    </div>
+    <label>أدخل نوع الاختبار:</label>
+    <input id="examTypeInput" type="text" placeholder="نوع الاختبار">
 
-    <button class="btn-primary" onclick="saveStudentData()">حفظ بيانات الطالب</button>
+    <label>أدخل الدرجة النهائية:</label>
+    <input id="fullMarkInput" type="number" placeholder="أدخل الدرجة النهائية">
+
+    <label>أدخل درجة الطالب:</label>
+    <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
+
+    <label>أدخل الصف:</label>
+    <input id="studentGrade" type="text" placeholder="أدخل الصف">
+
+    <label>أدخل الشعبة:</label>
+    <input id="studentSection" type="text" placeholder="أدخل الشعبة">
+
+    <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
 
     <h3>كشف الطلاب ورصد الدرجات</h3>
 
     <button onclick="loadStudents()">عرض جميع الطلاب</button>
 
-    <table class="students-table" id="studentsTable">
+    <table id="studentsTable">
         <thead>
             <tr>
                 <th>الكود</th>
@@ -203,7 +122,7 @@
         </tbody>
     </table>
 
-    <button onclick="location='index.html'" class="btn-secondary">العودة للصفحة الرئيسية</button>
+    <button onclick="location='index.html'" class="btn">العودة للصفحة الرئيسية</button>
 </div>
 
 <script>
@@ -295,8 +214,8 @@
                     <td>${student.fullMark}</td>
                     <td>${student.mark}</td>
                     <td>
-                        <button class="btn-edit" onclick="editStudent('${doc.id}')">تعديل</button>
-                        <button class="btn-delete" onclick="deleteStudent('${doc.id}')">حذف</button>
+                        <button onclick="editStudent('${doc.id}')">تعديل</button>
+                        <button onclick="deleteStudent('${doc.id}')">حذف</button>
                     </td>
                 `;
                 tbody.appendChild(row);
