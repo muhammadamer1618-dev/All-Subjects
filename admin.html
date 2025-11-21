@@ -2,55 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>صفحة المشرف - مدارس الفلاح الأهلية</title>
+    <title>لوحة المشرف - مدارس الفلاح الأهلية</title>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: Calibri;
-            background: #f4f4f4;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f6f9;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
         .header {
-            background: #1976d2;
+            background-color: #1976d2;
             color: #fff;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            border-bottom: 5px solid #fff;
         }
         .header h1 {
+            font-size: 36px;
             margin: 0;
-            font-size: 26px;
         }
         .header h2 {
-            margin: 5px 0;
             font-size: 20px;
+            margin-top: 10px;
             color: #ffeb3b;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 20px auto;
-            padding: 10px;
+            padding: 20px;
         }
         .btn {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 16px;
             margin: 10px;
             background-color: #1976d2;
             color: white;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         .btn:hover {
             background-color: #1565c0;
+            transform: scale(1.05);
         }
-        input {
+        .btn-secondary {
+            background-color: #757575;
+        }
+        .input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        input, select {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
             border: 1px solid #ccc;
-            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
         table {
             width: 100%;
@@ -59,8 +76,30 @@
         }
         th, td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 12px;
             text-align: center;
+        }
+        th {
+            background-color: #1976d2;
+            color: white;
+        }
+        .student-row {
+            background-color: #f9f9f9;
+            transition: background-color 0.3s ease;
+        }
+        .student-row:hover {
+            background-color: #f1f1f1;
+        }
+        .actions-btn {
+            background-color: #388e3c;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .actions-btn:hover {
+            background-color: #2c6c32;
         }
     </style>
 </head>
@@ -73,36 +112,49 @@
 
 <div class="container">
     <h3>تسجيل / تعديل بيانات الطالب</h3>
+    
+    <div class="input-container">
+        <div style="flex: 1;">
+            <label>أدخل كود الطالب:</label>
+            <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل اسم الطالب:</label>
+            <input id="studentName" type="text" placeholder="أدخل اسم الطالب هنا">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل المادة:</label>
+            <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل نوع الاختبار:</label>
+            <input id="examTypeInput" type="text" placeholder="نوع الاختبار">
+        </div>
+    </div>
 
-    <label>أدخل كود الطالب:</label>
-    <input id="studentCode" type="text" placeholder="أدخل كود الطالب هنا">
+    <div class="input-container">
+        <div style="flex: 1;">
+            <label>أدخل الدرجة النهائية:</label>
+            <input id="fullMarkInput" type="number" placeholder="أدخل الدرجة النهائية">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل درجة الطالب:</label>
+            <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل الصف:</label>
+            <input id="studentGrade" type="text" placeholder="أدخل الصف">
+        </div>
+        <div style="flex: 1;">
+            <label>أدخل الشعبة:</label>
+            <input id="studentSection" type="text" placeholder="أدخل الشعبة">
+        </div>
+    </div>
 
-    <label>أدخل اسم الطالب:</label>
-    <input id="studentName" type="text" placeholder="أدخل اسم الطالب هنا">
-
-    <label>أدخل المادة:</label>
-    <input id="subjectInput" type="text" placeholder="أدخل المادة هنا">
-
-    <label>أدخل نوع الاختبار:</label>
-    <input id="examTypeInput" type="text" placeholder="نوع الاختبار">
-
-    <label>أدخل الدرجة النهائية:</label>
-    <input id="fullMarkInput" type="number" placeholder="أدخل الدرجة النهائية">
-
-    <label>أدخل درجة الطالب:</label>
-    <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
-
-    <label>أدخل الصف:</label>
-    <input id="studentGrade" type="text" placeholder="أدخل الصف">
-
-    <label>أدخل الشعبة:</label>
-    <input id="studentSection" type="text" placeholder="أدخل الشعبة">
-
-    <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
+    <button onclick="saveStudentData()" class="btn">حفظ بيانات الطالب</button>
 
     <h3>كشف الطلاب ورصد الدرجات</h3>
-
-    <button onclick="loadStudents()">عرض جميع الطلاب</button>
+    <button onclick="loadStudents()" class="btn">عرض جميع الطلاب</button>
 
     <table id="studentsTable">
         <thead>
@@ -126,6 +178,7 @@
 </div>
 
 <script>
+    // Firebase configuration
     var firebaseConfig = {
         apiKey: "AIzaSyCX-KNQTu0Y1tnTGWd1sKtXLDUmR7Tehek",
         authDomain: "english-results.firebaseapp.com",
@@ -155,44 +208,20 @@
 
         var studentRef = db.collection("students").doc(studentCode);
 
-        // التحقق من وجود الطالب في Firebase
-        studentRef.get().then(function(doc) {
-            if (doc.exists) {
-                studentRef.update({
-                    name: studentName,
-                    subject: subjectInput,
-                    examType: examTypeInput,
-                    fullMark: Number(fullMarkInput),
-                    mark: Number(studentMarkInput),
-                    grade: studentGrade,
-                    section: studentSection
-                }).then(function() {
-                    alert("تم حفظ البيانات بنجاح");
-                    loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
-                }).catch(function(error) {
-                    alert("حدث خطأ أثناء حفظ البيانات");
-                    console.error(error);
-                });
-            } else {
-                studentRef.set({
-                    name: studentName,
-                    subject: subjectInput,
-                    examType: examTypeInput,
-                    fullMark: Number(fullMarkInput),
-                    mark: Number(studentMarkInput),
-                    grade: studentGrade,
-                    section: studentSection
-                }).then(function() {
-                    alert("تم إضافة بيانات الطالب بنجاح");
-                    loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
-                }).catch(function(error) {
-                    alert("حدث خطأ أثناء إضافة البيانات");
-                    console.error(error);
-                });
-            }
+        studentRef.set({
+            name: studentName,
+            subject: subjectInput,
+            examType: examTypeInput,
+            fullMark: Number(fullMarkInput),
+            mark: Number(studentMarkInput),
+            grade: studentGrade,
+            section: studentSection
+        }).then(function() {
+            alert("تم إضافة بيانات الطالب بنجاح");
+            loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
         }).catch(function(error) {
-            console.error("خطأ في جلب بيانات الطالب: ", error);
-            alert("حدث خطأ أثناء جلب بيانات الطالب");
+            alert("حدث خطأ أثناء إضافة البيانات");
+            console.error(error);
         });
     }
 
@@ -214,8 +243,8 @@
                     <td>${student.fullMark}</td>
                     <td>${student.mark}</td>
                     <td>
-                        <button onclick="editStudent('${doc.id}')">تعديل</button>
-                        <button onclick="deleteStudent('${doc.id}')">حذف</button>
+                        <button class="actions-btn" onclick="editStudent('${doc.id}')">تعديل</button>
+                        <button class="actions-btn" onclick="deleteStudent('${doc.id}')">حذف</button>
                     </td>
                 `;
                 tbody.appendChild(row);
