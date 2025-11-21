@@ -89,7 +89,7 @@
     <label>أدخل درجة الطالب:</label>
     <input id="studentMarkInput" type="number" placeholder="أدخل درجة الطالب">
 
-    <label>أدخل الصف:</label> <!-- إضافة خانة الصف هنا -->
+    <label>أدخل الصف:</label>
     <input id="studentGrade" type="text" placeholder="أدخل الصف">
 
     <button onclick="saveStudentData()">حفظ بيانات الطالب</button>
@@ -101,7 +101,7 @@
     <table id="studentsTable">
         <thead>
             <tr>
-                <th>الكود</th> <!-- إضافة خانة الكود هنا -->
+                <th>الكود</th>
                 <th>اسم الطالب</th>
                 <th>الصف</th>
                 <th>المادة</th>
@@ -111,11 +111,11 @@
             </tr>
         </thead>
         <tbody id="studentsBody">
-            <!-- يتم إدراج بيانات الطلاب هنا -->
+            <!-- سيتم إدراج بيانات الطلاب هنا -->
         </tbody>
     </table>
 
-    <button onclick="location='index.html'" class="btn">العودة للصفحة الرئيسية</button> <!-- إضافة زر العودة -->
+    <button onclick="location='index.html'" class="btn">العودة للصفحة الرئيسية</button>
 </div>
 
 <script>
@@ -146,8 +146,10 @@
 
         var studentRef = db.collection("students").doc(studentCode);
 
+        // التحقق من وجود الطالب في Firebase
         studentRef.get().then(function(doc) {
             if (doc.exists) {
+                // تحديث بيانات الطالب
                 studentRef.update({
                     subject: subjectInput,
                     examType: examTypeInput,
@@ -162,7 +164,20 @@
                     console.error(error);
                 });
             } else {
-                alert("الطالب غير موجود في قاعدة البيانات");
+                // إذا لم يكن الطالب موجودًا، نقوم بإضافته
+                studentRef.set({
+                    subject: subjectInput,
+                    examType: examTypeInput,
+                    fullMark: Number(fullMarkInput),
+                    mark: Number(studentMarkInput),
+                    grade: studentGrade
+                }).then(function() {
+                    alert("تم إضافة بيانات الطالب بنجاح");
+                    loadStudents(); // إعادة تحميل الطلاب بعد الحفظ
+                }).catch(function(error) {
+                    alert("حدث خطأ أثناء إضافة البيانات");
+                    console.error(error);
+                });
             }
         }).catch(function(error) {
             console.error("خطأ في جلب بيانات الطالب: ", error);
@@ -180,7 +195,7 @@
                 var student = doc.data();
                 var row = document.createElement("tr");
                 row.innerHTML = `
-                    <td>${studentCode}</td>
+                    <td>${doc.id}</td> <!-- عرض الكود هنا -->
                     <td>${student.name}</td>
                     <td>${student.grade}</td>
                     <td>${student.subject}</td>
