@@ -9,13 +9,16 @@
 
 <style>
 body{font-family:Calibri;background:#f6f6f6;margin:0;padding:25px}
-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:20px}
-td,th{border:1px solid #000;padding:10px;text-align:center}
+h1,h2{text-align:center;margin:0}
+h1{color:#1976d2;font-size:30px}
+h2{color:#d32f2f;font-size:22px;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:18px}
+th,td{border:1px solid #000;text-align:center;padding:8px}
 th{background:#1976d2;color:#fff}
-.btn{width:100%;padding:15px;border:none;border-radius:8px;font-size:18px;margin-bottom:10px;cursor:pointer}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:18px;margin-bottom:10px;cursor:pointer}
 .view{background:#1976d2;color:white}
 .print{background:#388e3c;color:white}
-.back{background:#777;color:white}
+.back{background:#555;color:white}
 @media print{.btn,#code{display:none}}
 </style>
 </head>
@@ -27,8 +30,8 @@ th{background:#1976d2;color:#fff}
 <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
 
 <div id="cert" style="display:none">
-<h1 style="text-align:center;color:#1565c0;font-size:34px;margin:0;font-weight:bold;">مدارس الفلاح الأهلية</h1>
-<h2 style="text-align:center;color:#d32f2f;font-size:26px;margin-top:5px;font-weight:bold;">كشف الدرجات</h2>
+<h1>مدارس الفلاح الأهلية</h1>
+<h2>شهادة درجات الطالب في جميع المواد</h2>
 
 <table>
 <tr><td>اسم الطالب</td><td id="st_name"></td></tr>
@@ -36,6 +39,7 @@ th{background:#1976d2;color:#fff}
 <tr><td>الشعبة</td><td id="st_section"></td></tr>
 </table>
 
+<h2 style="color:#1976d2;margin-top:20px">درجات المواد</h2>
 <table id="subjectsTable">
 <thead>
 <tr>
@@ -51,6 +55,8 @@ th{background:#1976d2;color:#fff}
 <tbody></tbody>
 </table>
 
+<h3 id="summary" style="text-align:center;margin-top:15px;color:#1976d2"></h3>
+
 <table style="margin-top:25px">
 <tr>
 <td>رئيس قسم الإشراف</td>
@@ -64,51 +70,49 @@ th{background:#1976d2;color:#fff}
 </div>
 
 <script>
-var firebaseConfig = {
-  apiKey: "AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
-  authDomain: "all-subjects-14322.firebaseapp.com",
-  projectId: "all-subjects-14322",
-  storageBucket: "all-subjects-14322.firebasestorage.app",
-  messagingSenderId: "813955287168",
-  appId: "1:813955287168:web:07efa7dde95b117b9bbe65"
-};
+var firebaseConfig={apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",authDomain:"all-subjects-14322.firebaseapp.com",projectId:"all-subjects-14322",storageBucket:"all-subjects-14322.firebasestorage.app",messagingSenderId:"813955287168",appId:"1:813955287168:web:07efa7dde95b117b9bbe65"};
 firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+var db=firebase.firestore();
 
 async function loadData(){
   let code=document.getElementById("code").value.trim();
   if(!code){alert("ادخل كود الطالب");return;}
+  let doc=await db.collection("students").doc(code).get();
+  if(!doc.exists){alert("الكود غير موجود");return;}
+  let st=doc.data();
 
-  try{
-    let doc=await db.collection("students").doc(code).get();
-    if(!doc.exists){alert("الكود غير موجود");return;}
-    let st=doc.data();
+  document.getElementById("cert").style.display="block";
+  document.getElementById("st_name").innerText=st.name||"";
+  document.getElementById("st_grade").innerText=st.grade||"";
+  document.getElementById("st_section").innerText=st.section||"";
 
-    document.getElementById("cert").style.display="block";
-    document.getElementById("st_name").innerText=st.name||"";
-    document.getElementById("st_grade").innerText=st.grade||"";
-    document.getElementById("st_section").innerText=st.section||"";
+  let tbody=document.querySelector("#subjectsTable tbody");
+  tbody.innerHTML="";
+  let totalMark=0,totalFull=0;
 
-    let tbody=document.querySelector("#subjectsTable tbody");
-    tbody.innerHTML="";
-    let totalMarks=0,totalFull=0;
-
-    for(let sub in st.subjects){
-      let s=st.subjects[sub];
-      let tr=document.createElement("tr");
-      tr.innerHTML=`
-      <td>${sub}</td>
-      <td>${s.exam||""}</td>
-      <td>${s.fullMark||""}</td>
-      <td>${s.mark||""}</td>
-      <td>${s.rating||""}</td>
-      <td>${s.teacher||""}</td>
-      <td>${s.supervisor||""}</td>`;
-      tbody.appendChild(tr);
-      totalMarks+=Number(s.mark||0);
-      totalFull+=Number(s.fullMark||0);
-    }
-  }catch(e){alert("خطأ في تحميل البيانات");console.log(e);}
+  for(let s in st.subjects){
+    let sub=st.subjects[s];
+    let tr=document.createElement("tr");
+    tr.innerHTML=`
+    <td>${s}</td>
+    <td>${sub.exam||""}</td>
+    <td>${sub.fullMark||""}</td>
+    <td>${sub.mark||""}</td>
+    <td>${sub.rating||""}</td>
+    <td>${sub.teacher||""}</td>
+    <td>${sub.supervisor||""}</td>`;
+    tbody.appendChild(tr);
+    totalMark+=Number(sub.mark||0);
+    totalFull+=Number(sub.fullMark||0);
+  }
+  let percent=(totalMark/totalFull)*100;
+  let overall="";
+  if(percent>=90)overall="ممتاز";
+  else if(percent>=80)overall="جيد جدًا";
+  else if(percent>=70)overall="جيد";
+  else if(percent>=60)overall="مقبول";
+  else overall="ضعيف";
+  document.getElementById("summary").innerText=`المجموع الكلي: ${totalMark}/${totalFull} — التقدير العام: ${overall}`;
 }
 </script>
 </body>
