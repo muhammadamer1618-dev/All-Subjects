@@ -19,20 +19,13 @@ td{border:1px solid #000;padding:10px;text-align:center}
 .view{background:#1976d2;color:white}
 .print{background:#388e3c;color:white}
 .back{background:#777;color:white}
-@media print{.btn,#code,#subjectSelect{display:none}}
+@media print{.btn,#code,#subject{display:none}}
 </style>
 </head>
 <body>
 
 <input id="code" placeholder="ادخل كود الطالب" class="btn" style="border:1px solid #999">
-<select id="subjectSelect" class="btn" style="border:1px solid #999;margin-top:0">
-  <option value="english">اللغة الإنجليزية</option>
-  <option value="arabic">اللغة العربية</option>
-  <option value="math">الرياضيات</option>
-  <option value="science">العلوم</option>
-  <option value="islamic">التربية الإسلامية</option>
-  <option value="social">الدراسات الاجتماعية</option>
-</select>
+<input id="subject" placeholder="ادخل اسم المادة كما سجّلها المعلم" class="btn" style="border:1px solid #999;margin-top:0">
 
 <button onclick="loadData()" class="btn view">عرض</button>
 <button onclick="window.print()" class="btn print">طباعة</button>
@@ -89,18 +82,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-function subjectNameFromId(id){
-  switch(id){
-    case "arabic":  return "اللغة العربية";
-    case "english": return "اللغة الإنجليزية";
-    case "math":    return "الرياضيات";
-    case "science": return "العلوم";
-    case "islamic": return "التربية الإسلامية";
-    case "social":  return "الدراسات الاجتماعية";
-    default: return "المادة";
-  }
-}
-
 function calcRating(mark, full){
  let m = Number(mark);
  let f = Number(full);
@@ -115,17 +96,19 @@ function calcRating(mark, full){
 
 async function loadData(){
  let c = document.getElementById('code').value.trim();
- let subjectId = document.getElementById('subjectSelect').value;
+ let subjectName = document.getElementById('subject').value.trim();
 
  if(!c){
    alert("ادخل كود الطالب");
    return;
  }
-
- var docId = c + "_" + subjectId;
+ if(!subjectName){
+   alert("ادخل اسم المادة");
+   return;
+ }
 
  try{
-   var doc = await db.collection("results").doc(docId).get();
+   var doc = await db.collection(subjectName).doc(c).get();
    if(!doc.exists){
      alert("لا توجد بيانات لهذا الكود في هذه المادة");
      return;
@@ -135,7 +118,7 @@ async function loadData(){
    document.getElementById('cert').style.display="block";
 
    document.getElementById('subject_title').innerText =
-     "شهادة درجات مادة " + (st.subjectName || subjectNameFromId(subjectId));
+     "شهادة درجات مادة " + (st.subject || subjectName);
 
    document.getElementById('student_name').innerText = st.name || "";
    document.getElementById('grade').innerText = st.grade || "";
