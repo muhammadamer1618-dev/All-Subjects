@@ -13,29 +13,36 @@ body {
   font-family: Calibri;
   background: #f5f6fa;
   margin: 0;
-  padding: 30px;
+  padding: 25px;
 }
 .container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
   padding: 25px;
 }
-.header {
-  background: #42a5f5;
-  color: #fff;
+h1 {
+  color: #1565c0;
   text-align: center;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 26px;
-  margin-bottom: 25px;
+  font-size: 32px;
+  margin-bottom: 5px;
 }
 h2 {
   color: #d32f2f;
   text-align: center;
   margin-top: 0;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #1976d2;
+  border-radius: 8px;
+  font-size: 18px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
 }
 .btn {
   width: 100%;
@@ -45,79 +52,42 @@ h2 {
   font-size: 18px;
   margin-bottom: 10px;
   cursor: pointer;
+  font-weight: bold;
 }
 .view {background: #1976d2; color: #fff;}
 .print {background: #388e3c; color: #fff;}
 .back {background: #757575; color: #fff;}
-input {
-  width: 100%;
-  padding: 15px;
-  border: 2px solid #1976d2;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 18px;
-  box-sizing: border-box;
-}
-.section {
-  background: #bbdefb;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-.section h3 {
-  color: #0d47a1;
-  margin-top: 0;
-  border-bottom: 2px solid #0d47a1;
-  display: inline-block;
-  padding-bottom: 5px;
-}
-.info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-.info-item {
-  background: #e3f2fd;
-  flex: 1 1 30%;
-  border: 1px solid #90caf9;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 18px;
-  color: #0d47a1;
-}
-.subject-card {
-  background: #fffde7;
-  border: 1px solid #fbc02d;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px 0;
-}
-.subject-card h4 {
-  margin: 0;
-  color: #f57f17;
-}
-.summary {
-  background: #ffecb3;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #5d4037;
-  margin-top: 20px;
-}
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 25px;
   font-size: 18px;
 }
 th, td {
-  border: 1px solid #ccc;
+  border: 2px solid #1976d2;
   padding: 10px;
+  text-align: center;
 }
 th {
-  background: #1976d2;
+  background: #42a5f5;
   color: #fff;
+}
+tfoot td {
+  background: #ffeb99;
+  font-weight: bold;
+  color: #5d4037;
+}
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.info-table td {
+  border: 2px solid #90caf9;
+  padding: 10px;
+  font-size: 18px;
+  color: #0d47a1;
+  background: #e3f2fd;
 }
 .footer {
   text-align: left;
@@ -126,15 +96,16 @@ th {
   color: #555;
 }
 @media print {
-  .btn, #code {display: none;}
-  body {background: #fff;}
+  .btn, #code {display:none;}
+  body {background:#fff;}
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="header">شهادة نتائج الطالب - مدارس الفلاح الأهلية</div>
+  <h1>مدارس الفلاح الأهلية</h1>
+  <h2>قسم النتائج الأكاديمية</h2>
 
   <input id="code" placeholder="ادخل كود الطالب">
   <button onclick="loadData()" class="btn view">عرض النتيجة</button>
@@ -142,26 +113,38 @@ th {
   <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
 
   <div id="cert" style="display:none">
-    <div class="section">
-      <h3>البيانات الأساسية</h3>
-      <div class="info">
-        <div class="info-item">الاسم: <span id="student_name"></span></div>
-        <div class="info-item">الصف: <span id="grade"></span></div>
-        <div class="info-item">الشعبة: <span id="section"></span></div>
-      </div>
-    </div>
+    <table class="info-table">
+      <tr>
+        <td>الاسم: <span id="student_name"></span></td>
+        <td>الصف: <span id="grade"></span></td>
+        <td>الشعبة: <span id="section"></span></td>
+      </tr>
+    </table>
 
-    <div class="section">
-      <h3>الدرجات</h3>
-      <div id="subjects_container"></div>
-    </div>
+    <table id="subjects_table">
+      <thead>
+        <tr>
+          <th>المادة</th>
+          <th>نوع الاختبار</th>
+          <th>الدرجة النهائية</th>
+          <th>درجة الطالب</th>
+          <th>التقدير</th>
+          <th>المعلم</th>
+          <th>مشرف المادة</th>
+        </tr>
+      </thead>
+      <tbody id="subjects_body"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="background:#ffca28;color:#000;">المجموع الكلي والتقدير العام</td>
+          <td id="total_marks"></td>
+          <td id="overall_rating"></td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
 
-    <div class="summary">
-      المجموع الكلي: <span id="total_marks">—</span><br>
-      التقدير العام: <span id="overall_rating">—</span>
-    </div>
-
-    <table>
+    <table style="margin-top:30px;">
       <tr>
         <th>رئيس قسم الإشراف</th>
         <th>مدير المدرسة</th>
@@ -213,8 +196,8 @@ async function loadData(){
     document.getElementById('section').innerText = st.section || "";
 
     let subs = st.subjects || {};
-    let container = document.getElementById('subjects_container');
-    container.innerHTML = "";
+    let tbody = document.getElementById('subjects_body');
+    tbody.innerHTML = "";
     let total = 0, totalFull = 0;
 
     Object.keys(subs).forEach((key)=>{
@@ -222,17 +205,17 @@ async function loadData(){
       let rating = calcRating(s.mark, s.fullMark);
       total += Number(s.mark)||0;
       totalFull += Number(s.fullMark)||0;
-      let card = document.createElement("div");
-      card.className = "subject-card";
-      card.innerHTML = `
-        <h4>${key}</h4>
-        <p><strong>نوع الاختبار:</strong> ${s.exam || "—"}</p>
-        <p><strong>الدرجة:</strong> ${s.mark || 0} / ${s.fullMark || 0}</p>
-        <p><strong>التقدير:</strong> ${rating}</p>
-        <p><strong>المعلم:</strong> ${s.teacher || "—"}</p>
-        <p><strong>مشرف المادة:</strong> ${s.supervisor || "—"}</p>
+      let tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${key}</td>
+        <td>${s.exam || "—"}</td>
+        <td>${s.fullMark || 0}</td>
+        <td>${s.mark || 0}</td>
+        <td>${rating}</td>
+        <td>${s.teacher || "—"}</td>
+        <td>${s.supervisor || "—"}</td>
       `;
-      container.appendChild(card);
+      tbody.appendChild(tr);
     });
 
     let overall = calcRating(total, totalFull);
