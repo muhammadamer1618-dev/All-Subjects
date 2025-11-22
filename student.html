@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>شهادة الطالب - مدارس الفلاح الأهلية</title>
 <link href='https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap' rel='stylesheet'>
-
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
@@ -12,9 +11,7 @@
 body{font-family:Calibri;background:#f6f6f6;margin:0;padding:25px}
 table{width:100%;border-collapse:collapse;margin-top:20px;font-size:20px}
 td,th{border:1px solid #000;padding:10px;text-align:center}
-.label{color:#d32f2f;font-weight:bold}
-.value{color:#1565c0;font-weight:bold}
-.title{text-align:center;font-size:24px;color:#d32f2f;font-weight:bold;padding:10px;border:1px solid #000;margin-top:10px}
+th{background:#1976d2;color:#fff}
 .btn{width:100%;padding:15px;border:none;border-radius:8px;font-size:18px;margin-bottom:10px;cursor:pointer}
 .view{background:#1976d2;color:white}
 .print{background:#388e3c;color:white}
@@ -30,62 +27,40 @@ td,th{border:1px solid #000;padding:10px;text-align:center}
 <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
 
 <div id="cert" style="display:none">
-
-<h1 style="text-align:center;color:#1565c0;font-size:34px;margin:0;font-weight:bold;">
-    مدارس الفلاح الأهلية
-</h1>
-
-<h2 style="text-align:center;color:#d32f2f;font-size:26px;margin-top:5px;font-weight:bold;">
-    شهادة درجات الطالب في جميع المواد
-</h2>
-
-<div class="title">بيانات الطالب</div>
+<h1 style="text-align:center;color:#1565c0;font-size:34px;margin:0;font-weight:bold;">مدارس الفلاح الأهلية</h1>
+<h2 style="text-align:center;color:#d32f2f;font-size:26px;margin-top:5px;font-weight:bold;">كشف الدرجات</h2>
 
 <table>
-<tr><td class="label">اسم الطالب</td><td class="value" id="student_name"></td></tr>
-<tr><td class="label">كود الطالب</td><td class="value" id="student_code"></td></tr>
-<tr><td class="label">الصف</td><td class="value" id="grade"></td></tr>
-<tr><td class="label">الشعبة</td><td class="value" id="section"></td></tr>
+<tr><td>اسم الطالب</td><td id="st_name"></td></tr>
+<tr><td>الصف</td><td id="st_grade"></td></tr>
+<tr><td>الشعبة</td><td id="st_section"></td></tr>
 </table>
 
-<div class="title">درجات المواد</div>
-
-<table id="subjects_table">
-  <thead>
-    <tr>
-      <th>المادة</th>
-      <th>نوع الاختبار</th>
-      <th>الدرجة النهائية</th>
-      <th>درجة الطالب</th>
-      <th>التقدير</th>
-      <th>اسم المعلم</th>
-    </tr>
-  </thead>
-  <tbody id="subjects_body">
-  </tbody>
-  <tfoot>
-    <tr>
-      <th colspan="2">المجموع الكلي</th>
-      <th id="total_full"></th>
-      <th id="total_mark"></th>
-      <th id="overall_rating" colspan="2"></th>
-    </tr>
-  </tfoot>
-</table>
-
-<table style="margin-top:20px">
+<table id="subjectsTable">
+<thead>
 <tr>
-<td class="label">مشرف المادة</td>
-<td class="label">رئيس قسم الإشراف</td>
-<td class="label">مدير المدرسة</td>
+<th>المادة</th>
+<th>نوع الاختبار</th>
+<th>الدرجة النهائية</th>
+<th>درجة الطالب</th>
+<th>التقدير</th>
+<th>اسم المعلم</th>
+<th>مشرف المادة</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<table style="margin-top:25px">
+<tr>
+<td>رئيس قسم الإشراف</td>
+<td>مدير المدرسة</td>
 </tr>
 <tr>
-<td class="value">محمد عامر أحمد</td>
-<td class="value">أحمد سمير عباس</td>
-<td class="value">سعيد بن علي الجمعان</td>
+<td>أحمد سمير عباس</td>
+<td>سعيد بن علي الجمعان</td>
 </tr>
 </table>
-
 </div>
 
 <script>
@@ -100,86 +75,41 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-function calcRating(mark, full){
-  var m = Number(mark);
-  var f = Number(full);
-  if(!m || !f) return "—";
-  var p = (m/f)*100;
-  if(p>=90) return "ممتاز";
-  if(p>=80) return "جيد جدًا";
-  if(p>=70) return "جيد";
-  if(p>=60) return "مقبول";
-  return "ضعيف";
-}
-
 async function loadData(){
-  var c = document.getElementById('code').value.trim();
-  if(!c){
-    alert("ادخل كود الطالب");
-    return;
-  }
+  let code=document.getElementById("code").value.trim();
+  if(!code){alert("ادخل كود الطالب");return;}
 
   try{
-    var doc = await db.collection("students").doc(c).get();
-    if(!doc.exists){
-      alert("لا يوجد طالب بهذا الكود");
-      return;
-    }
-    var st = doc.data();
+    let doc=await db.collection("students").doc(code).get();
+    if(!doc.exists){alert("الكود غير موجود");return;}
+    let st=doc.data();
 
-    document.getElementById('cert').style.display="block";
+    document.getElementById("cert").style.display="block";
+    document.getElementById("st_name").innerText=st.name||"";
+    document.getElementById("st_grade").innerText=st.grade||"";
+    document.getElementById("st_section").innerText=st.section||"";
 
-    document.getElementById('student_name').innerText = st.name || "";
-    document.getElementById('student_code').innerText = st.code || c;
-    document.getElementById('grade').innerText = st.grade || "";
-    document.getElementById('section').innerText = st.section || "";
+    let tbody=document.querySelector("#subjectsTable tbody");
+    tbody.innerHTML="";
+    let totalMarks=0,totalFull=0;
 
-    var tbody = document.getElementById('subjects_body');
-    tbody.innerHTML = "";
-
-    var totalFull = 0;
-    var totalMark = 0;
-
-    if(st.subjects && Array.isArray(st.subjects) && st.subjects.length>0){
-      st.subjects.forEach(function(sub){
-        var full = sub.fullMark != null ? Number(sub.fullMark) : 0;
-        var mark = sub.mark != null ? Number(sub.mark) : 0;
-        var rating = sub.rating || calcRating(mark, full);
-
-        totalFull += full;
-        totalMark += mark;
-
-        var tr = document.createElement("tr");
-        tr.innerHTML =
-          "<td>"+(sub.subjectName || "")+"</td>"+
-          "<td>"+(sub.examType || "")+"</td>"+
-          "<td>"+(full || "")+"</td>"+
-          "<td>"+(mark || "")+"</td>"+
-          "<td>"+rating+"</td>"+
-          "<td>"+(sub.teacher || "")+"</td>";
-        tbody.appendChild(tr);
-      });
-    }else{
-      var tr = document.createElement("tr");
-      tr.innerHTML = "<td colspan='6'>لا توجد مواد مسجلة لهذا الطالب</td>";
+    for(let sub in st.subjects){
+      let s=st.subjects[sub];
+      let tr=document.createElement("tr");
+      tr.innerHTML=`
+      <td>${sub}</td>
+      <td>${s.exam||""}</td>
+      <td>${s.fullMark||""}</td>
+      <td>${s.mark||""}</td>
+      <td>${s.rating||""}</td>
+      <td>${s.teacher||""}</td>
+      <td>${s.supervisor||""}</td>`;
       tbody.appendChild(tr);
+      totalMarks+=Number(s.mark||0);
+      totalFull+=Number(s.fullMark||0);
     }
-
-    document.getElementById('total_full').innerText = totalFull || "";
-    document.getElementById('total_mark').innerText = totalMark || "";
-
-    var overallRating = "—";
-    if(totalFull > 0 && totalMark >= 0){
-      overallRating = calcRating(totalMark, totalFull);
-    }
-    document.getElementById('overall_rating').innerText = "التقدير العام: " + overallRating;
-
-  }catch(e){
-    alert("خطأ في قراءة بيانات الطالب");
-    console.log(e);
-  }
+  }catch(e){alert("خطأ في تحميل البيانات");console.log(e);}
 }
 </script>
-
 </body>
 </html>
