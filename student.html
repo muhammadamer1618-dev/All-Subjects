@@ -2,137 +2,178 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>نتائج الطالب - مدارس الفلاح الأهلية</title>
+<title>شهادة نتائج الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{
+body {
   font-family: Calibri;
   background: #f5f6fa;
   margin: 0;
-  padding: 25px;
+  padding: 30px;
 }
-.container{
+.container {
   max-width: 900px;
   margin: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  padding: 25px;
+}
+.header {
+  background: #42a5f5;
+  color: #fff;
   text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 26px;
+  margin-bottom: 25px;
 }
-h1{
-  color: #1565c0;
-  font-size: 34px;
-  margin-bottom: 5px;
-}
-h2{
+h2 {
   color: #d32f2f;
+  text-align: center;
   margin-top: 0;
 }
-.btn{
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:8px;
-  font-size:18px;
-  margin-bottom:10px;
-  cursor:pointer;
+.btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
-.view{background:#1976d2;color:#fff}
-.print{background:#388e3c;color:#fff}
-.back{background:#777;color:#fff}
-input{width:100%;padding:15px;border:1px solid #ccc;border-radius:8px;margin-bottom:10px;font-size:18px;box-sizing:border-box}
-.card{
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  margin:15px 0;
-  box-shadow:0 3px 10px rgba(0,0,0,0.1);
-  opacity:0;
-  transform:translateY(30px);
-  animation:slideUp 0.8s forwards;
+.view {background: #1976d2; color: #fff;}
+.print {background: #388e3c; color: #fff;}
+.back {background: #757575; color: #fff;}
+input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #1976d2;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 18px;
+  box-sizing: border-box;
 }
-@keyframes slideUp{
-  from{opacity:0;transform:translateY(30px);}
-  to{opacity:1;transform:translateY(0);}
+.section {
+  background: #bbdefb;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
 }
-.card h3{
-  color:#1976d2;
-  margin-top:0;
+.section h3 {
+  color: #0d47a1;
+  margin-top: 0;
+  border-bottom: 2px solid #0d47a1;
+  display: inline-block;
+  padding-bottom: 5px;
 }
-.sub-card{
-  background:#e3f2fd;
-  padding:10px;
-  border-radius:8px;
-  margin:10px 0;
-  animation:slideUp 0.6s ease forwards;
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
 }
-.summary{
-  background:#fff3e0;
-  padding:15px;
-  border-radius:12px;
-  font-size:20px;
-  font-weight:bold;
-  color:#5d4037;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+.info-item {
+  background: #e3f2fd;
+  flex: 1 1 30%;
+  border: 1px solid #90caf9;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 18px;
+  color: #0d47a1;
 }
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
+.subject-card {
+  background: #fffde7;
+  border: 1px solid #fbc02d;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
 }
-th,td{
-  border:1px solid #ccc;
-  padding:10px;
-  font-size:18px;
+.subject-card h4 {
+  margin: 0;
+  color: #f57f17;
 }
-th{
-  background:#1976d2;
-  color:#fff;
+.summary {
+  background: #ffecb3;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #5d4037;
+  margin-top: 20px;
 }
-@media print{.btn,#code{display:none}}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 18px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+th {
+  background: #1976d2;
+  color: #fff;
+}
+.footer {
+  text-align: left;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
+}
+@media print {
+  .btn, #code {display: none;}
+  body {background: #fff;}
+}
 </style>
 </head>
 <body>
 
 <div class="container">
+  <div class="header">شهادة نتائج الطالب - مدارس الفلاح الأهلية</div>
 
-<h1>مدارس الفلاح الأهلية</h1>
-<h2>قسم النتائج الأكاديمية</h2>
+  <input id="code" placeholder="ادخل كود الطالب">
+  <button onclick="loadData()" class="btn view">عرض النتيجة</button>
+  <button onclick="window.print()" class="btn print">طباعة</button>
+  <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
 
-<input id="code" placeholder="ادخل كود الطالب">
-<button onclick="loadData()" class="btn view">عرض النتيجة</button>
-<button onclick="window.print()" class="btn print">طباعة</button>
-<button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
+  <div id="cert" style="display:none">
+    <div class="section">
+      <h3>البيانات الأساسية</h3>
+      <div class="info">
+        <div class="info-item">الاسم: <span id="student_name"></span></div>
+        <div class="info-item">الصف: <span id="grade"></span></div>
+        <div class="info-item">الشعبة: <span id="section"></span></div>
+      </div>
+    </div>
 
-<div id="cert" style="display:none">
+    <div class="section">
+      <h3>الدرجات</h3>
+      <div id="subjects_container"></div>
+    </div>
 
-  <div class="card" style="animation-delay:0.2s">
-    <h3>بيانات الطالب</h3>
-    <p><strong>الاسم:</strong> <span id="student_name"></span></p>
-    <p><strong>الصف:</strong> <span id="grade"></span></p>
-    <p><strong>الشعبة:</strong> <span id="section"></span></p>
+    <div class="summary">
+      المجموع الكلي: <span id="total_marks">—</span><br>
+      التقدير العام: <span id="overall_rating">—</span>
+    </div>
+
+    <table>
+      <tr>
+        <th>رئيس قسم الإشراف</th>
+        <th>مدير المدرسة</th>
+      </tr>
+      <tr>
+        <td>أحمد سمير عباس</td>
+        <td>سعيد بن علي الجمعان</td>
+      </tr>
+    </table>
+
+    <div class="footer">تصميم محمد عامر أحمد</div>
   </div>
-
-  <div id="subjects_container"></div>
-
-  <div class="summary" id="summary_box">
-    <p>المجموع الكلي: <span id="total_marks">—</span></p>
-    <p>التقدير العام: <span id="overall_rating">—</span></p>
-  </div>
-
-  <table>
-    <tr>
-      <th>رئيس قسم الإشراف</th>
-      <th>مدير المدرسة</th>
-    </tr>
-    <tr>
-      <td>أحمد سمير عباس</td>
-      <td>سعيد بن علي الجمعان</td>
-    </tr>
-  </table>
-
-</div>
 </div>
 
 <script>
@@ -148,63 +189,61 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
 function calcRating(mark, full){
- let m = Number(mark);
- let f = Number(full);
- if(!m || !f) return "—";
- let p = (m/f)*100;
- if(p>=90) return "ممتاز";
- if(p>=80) return "جيد جدًا";
- if(p>=70) return "جيد";
- if(p>=60) return "مقبول";
- return "ضعيف";
+  let m = Number(mark);
+  let f = Number(full);
+  if(!m || !f) return "—";
+  let p = (m/f)*100;
+  if(p>=90) return "ممتاز";
+  if(p>=80) return "جيد جدًا";
+  if(p>=70) return "جيد";
+  if(p>=60) return "مقبول";
+  return "ضعيف";
 }
 
 async function loadData(){
- let c = document.getElementById('code').value.trim();
- if(!c){alert("ادخل كود الطالب");return;}
- try{
-   var doc = await db.collection("students").doc(c).get();
-   if(!doc.exists){alert("الكود غير موجود");return;}
-   var st = doc.data();
-   document.getElementById('cert').style.display="block";
-   document.getElementById('student_name').innerText = st.name || "";
-   document.getElementById('grade').innerText = st.grade || "";
-   document.getElementById('section').innerText = st.section || "";
+  let c = document.getElementById('code').value.trim();
+  if(!c){alert("ادخل كود الطالب");return;}
+  try{
+    let doc = await db.collection("students").doc(c).get();
+    if(!doc.exists){alert("الكود غير موجود");return;}
+    let st = doc.data();
+    document.getElementById('cert').style.display="block";
+    document.getElementById('student_name').innerText = st.name || "";
+    document.getElementById('grade').innerText = st.grade || "";
+    document.getElementById('section').innerText = st.section || "";
 
-   let subs = st.subjects || {};
-   let container = document.getElementById('subjects_container');
-   container.innerHTML = "";
-   let total = 0, totalFull = 0;
+    let subs = st.subjects || {};
+    let container = document.getElementById('subjects_container');
+    container.innerHTML = "";
+    let total = 0, totalFull = 0;
 
-   Object.keys(subs).forEach((key,i)=>{
-     let s = subs[key];
-     let rating = calcRating(s.mark, s.fullMark);
-     total += Number(s.mark)||0;
-     totalFull += Number(s.fullMark)||0;
-     let card = document.createElement("div");
-     card.className = "sub-card";
-     card.style.animationDelay = `${0.3 + i*0.15}s`;
-     card.innerHTML = `
-       <h3>${key}</h3>
-       <p><strong>نوع الاختبار:</strong> ${s.exam || "—"}</p>
-       <p><strong>الدرجة:</strong> ${s.mark || 0} / ${s.fullMark || 0}</p>
-       <p><strong>التقدير:</strong> ${rating}</p>
-       <p><strong>المعلم:</strong> ${s.teacher || "—"}</p>
-       <p><strong>مشرف المادة:</strong> ${s.supervisor || "—"}</p>
-     `;
-     container.appendChild(card);
-   });
+    Object.keys(subs).forEach((key)=>{
+      let s = subs[key];
+      let rating = calcRating(s.mark, s.fullMark);
+      total += Number(s.mark)||0;
+      totalFull += Number(s.fullMark)||0;
+      let card = document.createElement("div");
+      card.className = "subject-card";
+      card.innerHTML = `
+        <h4>${key}</h4>
+        <p><strong>نوع الاختبار:</strong> ${s.exam || "—"}</p>
+        <p><strong>الدرجة:</strong> ${s.mark || 0} / ${s.fullMark || 0}</p>
+        <p><strong>التقدير:</strong> ${rating}</p>
+        <p><strong>المعلم:</strong> ${s.teacher || "—"}</p>
+        <p><strong>مشرف المادة:</strong> ${s.supervisor || "—"}</p>
+      `;
+      container.appendChild(card);
+    });
 
-   let overall = calcRating(total, totalFull);
-   document.getElementById('total_marks').innerText = `${total} / ${totalFull}`;
-   document.getElementById('overall_rating').innerText = overall;
+    let overall = calcRating(total, totalFull);
+    document.getElementById('total_marks').innerText = `${total} / ${totalFull}`;
+    document.getElementById('overall_rating').innerText = overall;
 
- }catch(e){
-   alert("حدث خطأ في تحميل البيانات");
-   console.log(e);
- }
+  }catch(e){
+    alert("حدث خطأ في تحميل البيانات");
+    console.log(e);
+  }
 }
 </script>
-
 </body>
 </html>
