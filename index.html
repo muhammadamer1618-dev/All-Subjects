@@ -1,53 +1,17 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>الصفحة الرئيسية - مدارس الفلاح الأهلية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-    <style>
-        body { font-family: Calibri; background: #f4f4f4; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #1976d2; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px; background-color: #1976d2; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #1565c0; }
-    </style>
-</head>
-<body>
-
-<h1>مدارس الفلاح الأهلية</h1>
-
-<button onclick="location='admin.html'">الذهاب إلى لوحة المشرف</button>
-<button onclick="location='student.html'">الذهاب إلى صفحة الطالب</button>
-
-<script>
-// إعداد Firebase
-var firebaseConfig = {
-    apiKey: "AIzaSyCX-KNQTu0Y1tnTGWd1sKtXLDUmR7Tehek",
-    authDomain: "english-results.firebaseapp.com",
-    projectId: "english-results",
-    storageBucket: "english-results.firebasestorage.app",
-    messagingSenderId: "673616902884",
-    appId: "1:673616902884:web:62c38d39a3c1a0694a4af1"
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
+  authDomain: "all-subjects-14322.firebaseapp.com",
+  projectId: "all-subjects-14322",
+  storageBucket: "all-subjects-14322.firebasestorage.app",
+  messagingSenderId: "813955287168",
+  appId: "1:813955287168:web:07efa7dde95b117b9bbe65"
 };
-firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
 
-// دالة لتحميل بيانات الطلاب (مثال إذا كنت تحتاجها في index)
-function loadStudents() {
-    db.collection("students").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            console.log(doc.id, " => ", doc.data());
-        });
-    }).catch(function(error) {
-        console.error("Error getting documents: ", error);
-    });
-}
-
-// إذا كنت بحاجة لتحميل البيانات عند تحميل الصفحة
-// loadStudents();
-</script>
-
-</body>
-</html>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
