@@ -10,23 +10,21 @@
 
 <style>
 body{font-family:Calibri;background:#f6f6f6;margin:0;padding:25px}
-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:22px}
-td{border:1px solid #000;padding:10px;text-align:center}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:20px}
+td,th{border:1px solid #000;padding:10px;text-align:center}
 .label{color:#d32f2f;font-weight:bold}
 .value{color:#1565c0;font-weight:bold}
-.title{text-align:center;font-size:26px;color:#d32f2f;font-weight:bold;padding:10px;border:1px solid #000;margin-top:10px}
+.title{text-align:center;font-size:24px;color:#d32f2f;font-weight:bold;padding:10px;border:1px solid #000;margin-top:10px}
 .btn{width:100%;padding:15px;border:none;border-radius:8px;font-size:18px;margin-bottom:10px;cursor:pointer}
 .view{background:#1976d2;color:white}
 .print{background:#388e3c;color:white}
 .back{background:#777;color:white}
-@media print{.btn,#code,#subject{display:none}}
+@media print{.btn,#code{display:none}}
 </style>
 </head>
 <body>
 
 <input id="code" placeholder="ادخل كود الطالب" class="btn" style="border:1px solid #999">
-<input id="subject" placeholder="ادخل اسم المادة كما سجّلها المعلم" class="btn" style="border:1px solid #999;margin-top:0">
-
 <button onclick="loadData()" class="btn view">عرض</button>
 <button onclick="window.print()" class="btn print">طباعة</button>
 <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
@@ -38,30 +36,50 @@ td{border:1px solid #000;padding:10px;text-align:center}
 </h1>
 
 <h2 style="text-align:center;color:#d32f2f;font-size:26px;margin-top:5px;font-weight:bold;">
-    شهادات المواد الدراسية
+    شهادة درجات الطالب في جميع المواد
 </h2>
 
-<div class="title" id="subject_title">شهادة درجات المادة</div>
+<div class="title">بيانات الطالب</div>
 
 <table>
 <tr><td class="label">اسم الطالب</td><td class="value" id="student_name"></td></tr>
+<tr><td class="label">كود الطالب</td><td class="value" id="student_code"></td></tr>
 <tr><td class="label">الصف</td><td class="value" id="grade"></td></tr>
 <tr><td class="label">الشعبة</td><td class="value" id="section"></td></tr>
-<tr><td class="label">اختبار</td><td class="value" id="examType"></td></tr>
-<tr><td class="label">الدرجة النهائية</td><td class="value" id="fullMark"></td></tr>
-<tr><td class="label">درجة الطالب</td><td class="value" id="mark"></td></tr>
-<tr><td class="label">التقدير</td><td class="value" id="rating"></td></tr>
 </table>
 
-<table>
+<div class="title">درجات المواد</div>
+
+<table id="subjects_table">
+  <thead>
+    <tr>
+      <th>المادة</th>
+      <th>نوع الاختبار</th>
+      <th>الدرجة النهائية</th>
+      <th>درجة الطالب</th>
+      <th>التقدير</th>
+      <th>اسم المعلم</th>
+    </tr>
+  </thead>
+  <tbody id="subjects_body">
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="2">المجموع الكلي</th>
+      <th id="total_full"></th>
+      <th id="total_mark"></th>
+      <th id="overall_rating" colspan="2"></th>
+    </tr>
+  </tfoot>
+</table>
+
+<table style="margin-top:20px">
 <tr>
-<td class="label">معلم المادة</td>
 <td class="label">مشرف المادة</td>
 <td class="label">رئيس قسم الإشراف</td>
 <td class="label">مدير المدرسة</td>
 </tr>
 <tr>
-<td class="value" id="teacher_fixed"></td>
 <td class="value">محمد عامر أحمد</td>
 <td class="value">أحمد سمير عباس</td>
 <td class="value">سعيد بن علي الجمعان</td>
@@ -83,56 +101,83 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
 function calcRating(mark, full){
- let m = Number(mark);
- let f = Number(full);
- if(!m || !f) return "—";
- let p = (m/f)*100;
- if(p>=90) return "ممتاز";
- if(p>=80) return "جيد جدًا";
- if(p>=70) return "جيد";
- if(p>=60) return "مقبول";
- return "ضعيف";
+  var m = Number(mark);
+  var f = Number(full);
+  if(!m || !f) return "—";
+  var p = (m/f)*100;
+  if(p>=90) return "ممتاز";
+  if(p>=80) return "جيد جدًا";
+  if(p>=70) return "جيد";
+  if(p>=60) return "مقبول";
+  return "ضعيف";
 }
 
 async function loadData(){
- let c = document.getElementById('code').value.trim();
- let subjectName = document.getElementById('subject').value.trim();
+  var c = document.getElementById('code').value.trim();
+  if(!c){
+    alert("ادخل كود الطالب");
+    return;
+  }
 
- if(!c){
-   alert("ادخل كود الطالب");
-   return;
- }
- if(!subjectName){
-   alert("ادخل اسم المادة");
-   return;
- }
+  try{
+    var doc = await db.collection("students").doc(c).get();
+    if(!doc.exists){
+      alert("لا يوجد طالب بهذا الكود");
+      return;
+    }
+    var st = doc.data();
 
- try{
-   var doc = await db.collection(subjectName).doc(c).get();
-   if(!doc.exists){
-     alert("لا توجد بيانات لهذا الكود في هذه المادة");
-     return;
-   }
-   var st = doc.data();
+    document.getElementById('cert').style.display="block";
 
-   document.getElementById('cert').style.display="block";
+    document.getElementById('student_name').innerText = st.name || "";
+    document.getElementById('student_code').innerText = st.code || c;
+    document.getElementById('grade').innerText = st.grade || "";
+    document.getElementById('section').innerText = st.section || "";
 
-   document.getElementById('subject_title').innerText =
-     "شهادة درجات مادة " + (st.subject || subjectName);
+    var tbody = document.getElementById('subjects_body');
+    tbody.innerHTML = "";
 
-   document.getElementById('student_name').innerText = st.name || "";
-   document.getElementById('grade').innerText = st.grade || "";
-   document.getElementById('section').innerText = st.section || "";
-   document.getElementById('examType').innerText = st.examType ? ("اختبار " + st.examType) : "";
-   document.getElementById('fullMark').innerText = st.fullMark || "";
-   document.getElementById('mark').innerText = (st.mark !== undefined && st.mark !== null) ? st.mark : "";
-   document.getElementById('teacher_fixed').innerText = st.teacher || "";
+    var totalFull = 0;
+    var totalMark = 0;
 
-   document.getElementById('rating').innerText = calcRating(st.mark, st.fullMark);
- }catch(e){
-   alert("خطأ في قراءة بيانات الطالب");
-   console.log(e);
- }
+    if(st.subjects && Array.isArray(st.subjects) && st.subjects.length>0){
+      st.subjects.forEach(function(sub){
+        var full = sub.fullMark != null ? Number(sub.fullMark) : 0;
+        var mark = sub.mark != null ? Number(sub.mark) : 0;
+        var rating = sub.rating || calcRating(mark, full);
+
+        totalFull += full;
+        totalMark += mark;
+
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>"+(sub.subjectName || "")+"</td>"+
+          "<td>"+(sub.examType || "")+"</td>"+
+          "<td>"+(full || "")+"</td>"+
+          "<td>"+(mark || "")+"</td>"+
+          "<td>"+rating+"</td>"+
+          "<td>"+(sub.teacher || "")+"</td>";
+        tbody.appendChild(tr);
+      });
+    }else{
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td colspan='6'>لا توجد مواد مسجلة لهذا الطالب</td>";
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('total_full').innerText = totalFull || "";
+    document.getElementById('total_mark').innerText = totalMark || "";
+
+    var overallRating = "—";
+    if(totalFull > 0 && totalMark >= 0){
+      overallRating = calcRating(totalMark, totalFull);
+    }
+    document.getElementById('overall_rating').innerText = "التقدير العام: " + overallRating;
+
+  }catch(e){
+    alert("خطأ في قراءة بيانات الطالب");
+    console.log(e);
+  }
 }
 </script>
 
