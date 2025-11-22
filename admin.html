@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة المشرف - مدارس الفلاح الأهلية</title>
+<link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+body{font-family:Calibri;background:#f4f4f4;margin:0}
+.header{background:#1976d2;color:#fff;text-align:center;padding:15px}
+.header h1{margin:0;font-size:24px}
+.header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b}
+.container{max-width:1100px;margin:20px auto;padding:10px}
+.box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
+h3{margin-top:0;color:#1976d2}
+label{display:block;margin-top:5px}
+input,select,button{font-family:Calibri;font-size:16px;padding:8px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
+input,select{width:100%}
+button{cursor:pointer;font-weight:bold}
+.btn-primary{background:#1976d2;color:#fff;border:none}
+.btn-secondary{background:#757575;color:#fff;border:none}
+.btn-danger{background:#d32f2f;color:#fff;border:none}
+.btn-save{width:100%;padding:12px;margin-top:10px;background:#388e3c;color:#fff;border:none;border-radius:10px;font-size:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.col-3{flex:1 1 23%}
+.col-4{flex:1 1 30%}
+.col-6{flex:1 1 48%}
+.col-12{flex:1 1 100%}
+@media(max-width:768px){.col-3,.col-4,.col-6{flex:1 1 100%}}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{border:1px solid #000;text-align:center;padding:6px}
+th{background:#1976d2;color:#fff}
+.small-btn{padding:4px 8px;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>مدارس الفلاح الأهلية</h1>
+  <h2>لوحة المشرف لإدخال درجات الطالب في جميع المواد</h2>
+</div>
+
+<div class="container">
+
+  <div class="box">
+    <h3>بيانات الطالب</h3>
+    <div class="row">
+      <div class="col-3"><label>كود الطالب</label><input id="st_code" placeholder="مثال: 1001"></div>
+      <div class="col-3"><label>اسم الطالب</label><input id="st_name" placeholder="اسم الطالب"></div>
+      <div class="col-3"><label>الصف</label><select id="st_grade"></select></div>
+      <div class="col-3"><label>الشعبة</label><select id="st_section">
+        <option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option>
+        <option value="د">د</option><option value="هـ">هـ</option>
+      </select></div>
+    </div>
+
+    <div class="row">
+      <div class="col-4"><button class="btn-primary" onclick="saveStudent()">حفظ بيانات الطالب والمواد</button></div>
+      <div class="col-4"><button class="btn-secondary" onclick="loadStudentByCode()">تحميل بيانات الطالب</button></div>
+      <div class="col-4"><button class="btn-danger" onclick="deleteStudent()">حذف الطالب بالكامل</button></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3>مواد الطالب ودرجاته</h3>
+    <button class="btn-secondary" onclick="addSubjectRow()">إضافة مادة</button>
+    <table>
+      <thead>
+        <tr>
+          <th>المادة</th><th>نوع الاختبار</th><th>الدرجة النهائية</th>
+          <th>درجة الطالب</th><th>التقدير</th><th>اسم المعلم</th><th>مشرف المادة</th><th>إزالة</th>
+        </tr>
+      </thead>
+      <tbody id="subjects_body"></tbody>
+    </table>
+  </div>
+
+  <div class="box">
+    <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
+    <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
+  </div>
+
+</div>
+
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
+  authDomain: "all-subjects-14322.firebaseapp.com",
+  projectId: "all-subjects-14322",
+  storageBucket: "all-subjects-14322.firebasestorage.app",
+  messagingSenderId: "813955287168",
+  appId: "1:813955287168:web:07efa7dde95b117b9bbe65"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+var gradesList = [
+  "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
+  "1 متوسط","2 متوسط","3 متوسط","1 ثانوي","2 ثانوي","3 ثانوي"
+];
+
+function initSelects(){
+  var g = document.getElementById('st_grade');
+  gradesList.forEach(x=>{
+    var o=document.createElement("option");
+    o.value=x;o.textContent=x;g.appendChild(o);
+  });
+  g.value=gradesList[0];
+}
+
+function calcRating(m,f){
+  m=Number(m);f=Number(f);
+  if(!m||!f)return"";
+  let p=(m/f)*100;
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
+}
+
+function clearForm(){
+  document.getElementById('st_code').value="";
+  document.getElementById('st_name').value="";
+  document.getElementById('st_grade').value=gradesList[0];
+  document.getElementById('st_section').value="أ";
+  document.getElementById('subjects_body').innerHTML="";
+  addSubjectRow();
+}
+
+function addSubjectRow(d){
+  let t=document.getElementById('subjects_body');
+  let tr=document.createElement("tr");
+  tr.innerHTML=`
+  <td><input class='sub-name' value='${d?.subjectName||""}'></td>
+  <td><input class='sub-exam' value='${d?.exam||""}'></td>
+  <td><input type='number' class='sub-full' value='${d?.fullMark||""}'></td>
+  <td><input type='number' class='sub-mark' value='${d?.mark||""}'></td>
+  <td class='sub-rating'>${calcRating(d?.mark,d?.fullMark)}</td>
+  <td><input class='sub-teacher' value='${d?.teacher||""}'></td>
+  <td><input class='sub-supervisor' value='${d?.supervisor||""}'></td>
+  <td><button class='small-btn btn-danger' onclick='this.closest("tr").remove()'>حذف</button></td>`;
+  t.appendChild(tr);
+  tr.querySelector(".sub-full").addEventListener("input",()=>{tr.querySelector(".sub-rating").innerText=calcRating(tr.querySelector(".sub-mark").value,tr.querySelector(".sub-full").value)});
+  tr.querySelector(".sub-mark").addEventListener("input",()=>{tr.querySelector(".sub-rating").innerText=calcRating(tr.querySelector(".sub-mark").value,tr.querySelector(".sub-full").value)});
+}
+
+async function saveStudent(){
+  let c=document.getElementById('st_code').value.trim();
+  let n=document.getElementById('st_name').value.trim();
+  let g=document.getElementById('st_grade').value;
+  let s=document.getElementById('st_section').value;
+  if(!c||!n){alert("أدخل كود واسم الطالب");return;}
+
+  let rows=document.querySelectorAll("#subjects_body tr");
+  let subs={};
+  rows.forEach(tr=>{
+    let sub=tr.querySelector(".sub-name").value.trim();
+    if(!sub)return;
+    subs[sub]={
+      exam:tr.querySelector(".sub-exam").value.trim(),
+      fullMark:Number(tr.querySelector(".sub-full").value)||0,
+      mark:Number(tr.querySelector(".sub-mark").value)||0,
+      rating:tr.querySelector(".sub-rating").innerText,
+      teacher:tr.querySelector(".sub-teacher").value.trim(),
+      supervisor:tr.querySelector(".sub-supervisor").value.trim()
+    };
+  });
+
+  try{
+    await db.collection("students").doc(c).set({code:c,name:n,grade:g,section:s,subjects:subs});
+    alert("تم الحفظ بنجاح");
+  }catch(e){alert("خطأ أثناء الحفظ");console.log(e);}
+}
+
+async function loadStudentByCode(){
+  let c=document.getElementById('st_code').value.trim();
+  if(!c){alert("أدخل كود الطالب");return;}
+  try{
+    let doc=await db.collection("students").doc(c).get();
+    if(!doc.exists){alert("الطالب غير موجود");return;}
+    let st=doc.data();
+    document.getElementById('st_name').value=st.name||"";
+    document.getElementById('st_grade').value=st.grade||gradesList[0];
+    document.getElementById('st_section').value=st.section||"أ";
+    let t=document.getElementById('subjects_body');t.innerHTML="";
+    if(st.subjects){Object.keys(st.subjects).forEach(k=>{let sub=st.subjects[k];sub.subjectName=k;addSubjectRow(sub);});}
+  }catch(e){alert("خطأ أثناء التحميل");console.log(e);}
+}
+
+async function deleteStudent(){
+  let c=document.getElementById('st_code').value.trim();
+  if(!c){alert("يرجى إدخال كود الطالب");return;}
+  if(!confirm("هل أنت متأكد أنك تريد حذف هذا الطالب بالكامل؟"))return;
+  try{
+    await db.collection("students").doc(c).delete();
+    alert("تم حذف الطالب بنجاح");
+    clearForm();
+  }catch(e){alert("حدث خطأ أثناء الحذف");console.log(e);}
+}
+
+initSelects();
+addSubjectRow();
+</script>
+
+</body>
+</html>
