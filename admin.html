@@ -2,58 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>لوحة المشرف - مدارس الفلاح الأهلية</title>
+<title>دخول المشرف - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
 <style>
-body{font-family:Calibri;background:#f4f4f4;margin:0}
-.header{background:#1976d2;color:#fff;padding:15px;text-align:center}
-.container{max-width:1100px;margin:20px auto;padding:10px}
-.box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
-input,button{font-family:Calibri;font-size:16px;padding:8px;margin:5px 0;border-radius:6px;border:1px solid #999;width:100%;box-sizing:border-box}
-button{cursor:pointer;border:none;font-weight:bold}
-.btn-primary{background:#1976d2;color:#fff}
-.btn-danger{background:#d32f2f;color:#fff}
-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
-th,td{border:1px solid #000;text-align:center;padding:6px}
-th{background:#1976d2;color:#fff}
+body{
+  font-family: Calibri;
+  background: linear-gradient(135deg,#1976d2,#42a5f5);
+  height:100vh;margin:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.card{
+  background:#fff;color:#1565c0;
+  padding:30px;border-radius:15px;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+  width:90%;max-width:400px;text-align:center;
+}
+h1{margin:0;font-size:28px;font-weight:bold;}
+h2{margin:10px 0;color:#d32f2f;}
+input,button{
+  width:100%;padding:12px;margin-top:15px;
+  border-radius:8px;border:1px solid #999;
+  font-size:18px;
+}
+button{
+  background:#1976d2;color:#fff;border:none;
+  cursor:pointer;font-weight:bold;
+}
+button:hover{opacity:0.9;}
+.link-btn{background:#d32f2f;}
+.reset-link{
+  display:block;
+  margin-top:10px;
+  color:#1565c0;
+  text-decoration:underline;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
 
-<div class="header">
+<div class="card">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>لوحة المشرف لإدخال درجات الطالب</h2>
-</div>
+  <h2>دخول المشرف</h2>
 
-<div class="container">
+  <input id="email" type="email" placeholder="البريد الإلكتروني">
+  <input id="password" type="password" placeholder="كلمة المرور">
+  <button onclick="login()">تسجيل الدخول</button>
+  <span class="reset-link" onclick="resetPassword()">نسيت كلمة المرور؟</span>
 
-  <div class="box">
-    <h3>بيانات الطالب</h3>
-    <label>كود الطالب</label>
-    <input id="st_code" placeholder="مثال: 1001">
-    <label>اسم الطالب</label>
-    <input id="st_name" placeholder="اسم الطالب">
-    <label>الصف</label>
-    <input id="st_grade" placeholder="مثال: 6 ابتدائي">
-    <label>الشعبة</label>
-    <input id="st_section" placeholder="أ / ب / ج">
-  </div>
-
-  <div class="box">
-    <h3>إضافة المواد</h3>
-    <div id="subjects"></div>
-    <button class="btn-primary" onclick="addSubject()">إضافة مادة</button>
-  </div>
-
-  <div class="box">
-    <button class="btn-primary" onclick="saveStudent()">حفظ الطالب</button>
-    <button class="btn-danger" onclick="clearAll()">تفريغ الكل</button>
-  </div>
-
+  <button class="link-btn" onclick="location='student.html'">صفحة الطالب</button>
 </div>
 
 <script>
@@ -66,50 +67,31 @@ const firebaseConfig = {
   appId: "1:813955287168:web:07efa7dde95b117b9bbe65"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const auth = firebase.auth();
 
-function addSubject(){
-  const container = document.getElementById("subjects");
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <table>
-      <tr>
-        <td><input placeholder='اسم المادة' class='sub_name'></td>
-        <td><input type='number' placeholder='الدرجة النهائية' class='sub_full'></td>
-        <td><input type='number' placeholder='درجة الطالب' class='sub_mark'></td>
-        <td><button class='btn-danger' onclick='this.closest("div").remove()'>حذف</button></td>
-      </tr>
-    </table>`;
-  container.appendChild(div);
+function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  auth.signInWithEmailAndPassword(email, password)
+  .then(()=>{
+    location = "admin.html";
+  })
+  .catch(error=>{
+    alert("خطأ في تسجيل الدخول: " + error.message);
+  });
 }
 
-function clearAll(){
-  document.getElementById("st_code").value = "";
-  document.getElementById("st_name").value = "";
-  document.getElementById("st_grade").value = "";
-  document.getElementById("st_section").value = "";
-  document.getElementById("subjects").innerHTML = "";
-}
-
-async function saveStudent(){
-  const code = document.getElementById("st_code").value.trim();
-  const name = document.getElementById("st_name").value.trim();
-  const grade = document.getElementById("st_grade").value.trim();
-  const section = document.getElementById("st_section").value.trim();
-  if(!code || !name){alert("برجاء إدخال كود واسم الطالب");return;}
-  const rows = document.querySelectorAll("#subjects table tr");
-  const subjects = [];
-  rows.forEach(r=>{
-    const n=r.querySelector(".sub_name").value.trim();
-    const f=Number(r.querySelector(".sub_full").value);
-    const m=Number(r.querySelector(".sub_mark").value);
-    if(n) subjects.push({name:n,fullMark:f,mark:m});
+function resetPassword(){
+  const email = document.getElementById("email").value.trim();
+  if(!email){alert("يرجى إدخال البريد الإلكتروني أولًا.");return;}
+  auth.sendPasswordResetEmail(email)
+  .then(()=>{
+    alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.");
+  })
+  .catch(error=>{
+    alert("حدث خطأ: " + error.message);
   });
-  await db.collection("students").doc(code).set({
-    name, grade, section, subjects
-  });
-  alert("تم حفظ بيانات الطالب بنجاح");
-  clearAll();
 }
 </script>
 
