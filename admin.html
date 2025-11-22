@@ -4,135 +4,45 @@
 <meta charset="UTF-8">
 <title>لوحة المشرف - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
-
-<!-- Firebase compat SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-  font-family:Calibri;
-  background:#f4f4f4;
-  margin:0;
-}
-.header{
-  background:#1976d2;color:#fff;
-  padding:15px;text-align:center;
-}
-.header h1{margin:0;font-size:26px;}
-.header h2{margin:5px 0 0;font-size:20px;color:#ffeb3b;}
-.container{
-  max-width:1100px;margin:20px auto;padding:10px;
-}
-.box{
-  background:#fff;border-radius:10px;
-  padding:15px;margin-bottom:15px;
-  box-shadow:0 0 8px rgba(0,0,0,0.1);
-}
-.box h3{margin-top:0;color:#1976d2;}
-input,select,button{
-  font-family:Calibri;
-  font-size:16px;
-  padding:8px;
-  margin:5px 0;
-  border-radius:6px;
-  border:1px solid #999;
-}
-input,select{width:100%;box-sizing:border-box;}
-button{
-  cursor:pointer;border:none;
-  font-weight:bold;
-}
-.btn-primary{background:#1976d2;color:#fff;}
-.btn-danger{background:#d32f2f;color:#fff;}
-.btn-secondary{background:#757575;color:#fff;}
-.row{
-  display:flex;flex-wrap:wrap;gap:10px;
-}
-.col-3{flex:1 1 23%;}
-.col-4{flex:1 1 30%;}
-.col-6{flex:1 1 48%;}
-.col-12{flex:1 1 100%;}
-@media(max-width:768px){
-  .col-3,.col-4,.col-6{flex:1 1 100%;}
-}
-table{
-  width:100%;border-collapse:collapse;
-  margin-top:10px;font-size:14px;
-}
-th,td{
-  border:1px solid #000;
-  text-align:center;
-  padding:6px;
-}
-th{
-  background:#1976d2;color:#fff;
-}
-.subject-input{
-  width:100%;
-  box-sizing:border-box;
-}
-.small-btn{
-  padding:4px 8px;
-  font-size:12px;
-}
+body{font-family:Calibri;background:#f4f4f4;margin:0;padding:0}
+.header{background:#1976d2;color:#fff;text-align:center;padding:15px}
+.container{max-width:1100px;margin:20px auto;padding:10px}
+.box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+th,td{border:1px solid #000;text-align:center;padding:6px}
+th{background:#1976d2;color:#fff}
+button{padding:10px 15px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
+.btn-primary{background:#1976d2;color:#fff}
+.btn-secondary{background:#555;color:#fff}
+.btn-save{background:#388e3c;color:#fff;width:100%;margin-top:10px;padding:12px;font-size:17px;border-radius:8px}
+input,select{padding:7px;border:1px solid #aaa;border-radius:6px;width:100%}
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>لوحة المشرف - إدخال درجات الطالب في جميع المواد</h2>
+  <h2>لوحة المشرف</h2>
 </div>
 
 <div class="container">
-
-  <!-- بيانات الطالب الأساسية -->
   <div class="box">
-    <h3>بيانات الطالب</h3>
-    <div class="row">
-      <div class="col-3">
-        <label>كود الطالب</label>
-        <input id="st_code" placeholder="مثال: 1001">
-      </div>
-      <div class="col-3">
-        <label>اسم الطالب</label>
-        <input id="st_name" placeholder="اسم الطالب">
-      </div>
-      <div class="col-3">
-        <label>الصف</label>
-        <select id="st_grade"></select>
-      </div>
-      <div class="col-3">
-        <label>الشعبة</label>
-        <select id="st_section">
-          <option value="أ">أ</option>
-          <option value="ب">ب</option>
-          <option value="ج">ج</option>
-          <option value="د">د</option>
-          <option value="هـ">هـ</option>
-        </select>
-      </div>
-    </div>
+    <h3>تسجيل بيانات الطالب</h3>
+    <label>كود الطالب</label>
+    <input id="st_code" placeholder="مثال: 1001">
+    <label>اسم الطالب</label>
+    <input id="st_name" placeholder="اسم الطالب">
+    <label>الصف</label>
+    <input id="st_grade" placeholder="مثال: 6 ابتدائي">
+    <label>الشعبة</label>
+    <input id="st_section" placeholder="مثال: أ">
 
-    <div class="row">
-      <div class="col-4">
-        <button class="btn-primary" onclick="saveStudent()">حفظ بيانات الطالب والمواد</button>
-      </div>
-      <div class="col-4">
-        <button class="btn-secondary" onclick="loadStudent()">تحميل بيانات الطالب</button>
-      </div>
-      <div class="col-4">
-        <button class="btn-secondary" onclick="newStudent()">طالب جديد</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- جدول المواد -->
-  <div class="box">
-    <h3>مواد الطالب ودرجاته</h3>
-    <button class="btn-primary" onclick="addSubjectRow()">إضافة مادة</button>
-    <table>
+    <h3>إضافة المواد</h3>
+    <table id="subjectsTable">
       <thead>
         <tr>
           <th>المادة</th>
@@ -140,20 +50,16 @@ th{
           <th>الدرجة النهائية</th>
           <th>درجة الطالب</th>
           <th>التقدير</th>
-          <th>اسم المعلم</th>
-          <th>حذف</th>
+          <th>المعلم</th>
+          <th>مشرف المادة</th>
+          <th>إزالة</th>
         </tr>
       </thead>
-      <tbody id="subjects_body">
-      </tbody>
+      <tbody></tbody>
     </table>
+    <button class="btn-secondary" onclick="addSubject()">إضافة مادة</button>
+    <button class="btn-save" onclick="saveStudent()">حفظ الطالب</button>
   </div>
-
-  <div class="box">
-    <button class="btn-secondary" onclick="location='index.html'">العودة للصفحة الرئيسية</button>
-    <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
-  </div>
-
 </div>
 
 <script>
@@ -168,178 +74,66 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-var gradesList = [
-  "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
-  "1 متوسط","2 متوسط","3 متوسط",
-  "1 ثانوي","2 ثانوي","3 ثانوي"
-];
-
-function initSelects(){
-  var stGrade = document.getElementById('st_grade');
-  gradesList.forEach(function(g){
-    var o = document.createElement("option");
-    o.value = g; o.textContent = g;
-    stGrade.appendChild(o);
-  });
-  stGrade.value = gradesList[0];
-}
-
 function calcRating(mark, full){
-  var m = Number(mark);
-  var f = Number(full);
-  if(!m || !f) return "";
-  var p = (m/f)*100;
-  if(p>=90) return "ممتاز";
-  if(p>=80) return "جيد جدًا";
-  if(p>=70) return "جيد";
-  if(p>=60) return "مقبول";
-  return "ضعيف";
+  let m=Number(mark), f=Number(full);
+  if(!m||!f)return"";
+  let p=(m/f)*100;
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
 }
 
-function newStudent(){
-  document.getElementById('st_code').value = "";
-  document.getElementById('st_name').value = "";
-  document.getElementById('st_grade').value = gradesList[0];
-  document.getElementById('st_section').value = "أ";
-  var tbody = document.getElementById('subjects_body');
-  tbody.innerHTML = "";
-  addSubjectRow();
+function addSubject(){
+  let tr=document.createElement("tr");
+  tr.innerHTML=`
+  <td><input class='subject'></td>
+  <td><input class='exam'></td>
+  <td><input type='number' class='full'></td>
+  <td><input type='number' class='mark' oninput='updateRating(this)'></td>
+  <td class='rating'></td>
+  <td><input class='teacher'></td>
+  <td><input class='supervisor'></td>
+  <td><button onclick='this.parentElement.parentElement.remove()'>حذف</button></td>`;
+  document.querySelector("#subjectsTable tbody").appendChild(tr);
 }
 
-function addSubjectRow(subjectData){
-  var tbody = document.getElementById('subjects_body');
-  var tr = document.createElement("tr");
-  tr.className = "subject-row";
-
-  var subjectName = subjectData && subjectData.subjectName ? subjectData.subjectName : "";
-  var examType = subjectData && subjectData.examType ? subjectData.examType : "";
-  var fullMark = subjectData && subjectData.fullMark != null ? subjectData.fullMark : "";
-  var mark = subjectData && subjectData.mark != null ? subjectData.mark : "";
-  var teacher = subjectData && subjectData.teacher ? subjectData.teacher : "";
-  var rating = calcRating(mark, fullMark);
-
-  tr.innerHTML =
-    "<td><input class='subject-input sub-name' value='"+subjectName+"'></td>"+
-    "<td><input class='subject-input sub-exam' value='"+examType+"'></td>"+
-    "<td><input class='subject-input sub-full' type='number' value='"+fullMark+"'></td>"+
-    "<td><input class='subject-input sub-mark' type='number' value='"+mark+"'></td>"+
-    "<td class='sub-rating'>"+rating+"</td>"+
-    "<td><input class='subject-input sub-teacher' value='"+teacher+"'></td>"+
-    "<td><button class='small-btn btn-danger' onclick='deleteSubjectRow(this)'>حذف</button></td>";
-
-  tbody.appendChild(tr);
-
-  var fullInput = tr.querySelector(".sub-full");
-  var markInput = tr.querySelector(".sub-mark");
-
-  function updateRating(){
-    var r = calcRating(markInput.value, fullInput.value);
-    tr.querySelector(".sub-rating").textContent = r;
-  }
-
-  fullInput.addEventListener("input", updateRating);
-  markInput.addEventListener("input", updateRating);
-}
-
-function deleteSubjectRow(btn){
-  var tr = btn.closest("tr");
-  tr.parentNode.removeChild(tr);
+function updateRating(el){
+  let row=el.parentElement.parentElement;
+  let mark=row.querySelector(".mark").value;
+  let full=row.querySelector(".full").value;
+  row.querySelector(".rating").innerText=calcRating(mark,full);
 }
 
 async function saveStudent(){
-  var code = document.getElementById('st_code').value.trim();
-  var name = document.getElementById('st_name').value.trim();
-  var grade = document.getElementById('st_grade').value;
-  var section = document.getElementById('st_section').value;
+  let code=document.getElementById("st_code").value.trim();
+  let name=document.getElementById("st_name").value.trim();
+  if(!code||!name){alert("يرجى إدخال الكود والاسم");return;}
+  let grade=document.getElementById("st_grade").value.trim();
+  let section=document.getElementById("st_section").value.trim();
 
-  if(!code || !name){
-    alert("برجاء إدخال كود الطالب واسم الطالب");
-    return;
-  }
-
-  var rows = document.querySelectorAll("#subjects_body tr.subject-row");
-  var subjects = [];
-  rows.forEach(function(tr){
-    var subjectName = tr.querySelector(".sub-name").value.trim();
-    var examType = tr.querySelector(".sub-exam").value.trim();
-    var fullMarkVal = tr.querySelector(".sub-full").value.trim();
-    var markVal = tr.querySelector(".sub-mark").value.trim();
-    var teacher = tr.querySelector(".sub-teacher").value.trim();
-
-    if(!subjectName) return; // تجاهل الصفوف الفارغة
-
-    var fullMarkNum = Number(fullMarkVal);
-    var markNum = Number(markVal);
-    var rating = calcRating(markNum, fullMarkNum);
-
-    subjects.push({
-      subjectName: subjectName,
-      examType: examType,
-      fullMark: isNaN(fullMarkNum)?0:fullMarkNum,
-      mark: isNaN(markNum)?0:markNum,
-      teacher: teacher,
-      rating: rating
-    });
+  let subs={};
+  document.querySelectorAll("#subjectsTable tbody tr").forEach(tr=>{
+    let subj=tr.querySelector(".subject").value.trim();
+    if(!subj)return;
+    subs[subj]={
+      exam:tr.querySelector(".exam").value.trim(),
+      fullMark:Number(tr.querySelector(".full").value),
+      mark:Number(tr.querySelector(".mark").value),
+      rating:tr.querySelector(".rating").innerText,
+      teacher:tr.querySelector(".teacher").value.trim(),
+      supervisor:tr.querySelector(".supervisor").value.trim()
+    };
   });
 
-  if(subjects.length === 0){
-    alert("برجاء إدخال مادة واحدة على الأقل");
-    return;
-  }
-
-  var data = {
-    code: code,
-    name: name,
-    grade: grade,
-    section: section,
-    subjects: subjects
-  };
-
   try{
-    await db.collection("students").doc(code).set(data);
-    alert("تم حفظ بيانات الطالب والمواد بنجاح");
-  }catch(e){
-    alert("خطأ في حفظ بيانات الطالب");
-    console.log(e);
-  }
+    await db.collection("students").doc(code).set({
+      name:name,grade:grade,section:section,subjects:subs
+    });
+    alert("تم الحفظ بنجاح");
+  }catch(e){alert("حدث خطأ أثناء الحفظ");console.log(e);}
 }
-
-async function loadStudent(){
-  var code = document.getElementById('st_code').value.trim();
-  if(!code){
-    alert("ادخل كود الطالب أولاً");
-    return;
-  }
-
-  try{
-    var doc = await db.collection("students").doc(code).get();
-    if(!doc.exists){
-      alert("لا يوجد طالب بهذا الكود");
-      return;
-    }
-    var st = doc.data();
-    document.getElementById('st_name').value = st.name || "";
-    document.getElementById('st_grade').value = st.grade || gradesList[0];
-    document.getElementById('st_section').value = st.section || "أ";
-
-    var tbody = document.getElementById('subjects_body');
-    tbody.innerHTML = "";
-    if(st.subjects && Array.isArray(st.subjects) && st.subjects.length>0){
-      st.subjects.forEach(function(sub){
-        addSubjectRow(sub);
-      });
-    }else{
-      addSubjectRow();
-    }
-  }catch(e){
-    alert("خطأ في تحميل بيانات الطالب");
-    console.log(e);
-  }
-}
-
-initSelects();
-addSubjectRow();
 </script>
-
 </body>
 </html>
