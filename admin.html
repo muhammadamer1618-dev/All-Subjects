@@ -34,7 +34,6 @@ table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
 th,td{border:1px solid #000;text-align:center;padding:6px}
 th{background:#1976d2;color:#fff}
 .small-btn{padding:4px 8px;font-size:12px}
-#searchInput{width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
 </style>
 </head>
 <body>
@@ -60,18 +59,15 @@ th{background:#1976d2;color:#fff}
 
     <div class="row">
       <div class="col-4"><button class="btn-primary" onclick="saveStudent()">حفظ بيانات الطالب والمواد</button></div>
-      <div class="col-4"><button class="btn-secondary" onclick="loadStudentByCode()">تحميل بيانات الطالب</button></div>
+      <div class="col-4"><button class="btn-secondary" onclick="loadStudent()">تحميل بيانات الطالب</button></div>
       <div class="col-4"><button class="btn-danger" onclick="deleteStudent()">حذف الطالب بالكامل</button></div>
     </div>
   </div>
 
   <div class="box">
     <h3>مواد الطالب ودرجاته</h3>
-
-    <input type="text" id="searchInput" placeholder="ابحث باسم الطالب أو المادة">
-
     <button class="btn-secondary" onclick="addSubjectRow()">إضافة مادة</button>
-    <table id="studentsTable">
+    <table>
       <thead>
         <tr>
           <th>المادة</th><th>نوع الاختبار</th><th>الدرجة النهائية</th>
@@ -126,15 +122,6 @@ function calcRating(m,f){
   return"ضعيف";
 }
 
-function clearForm(){
-  document.getElementById('st_code').value="";
-  document.getElementById('st_name').value="";
-  document.getElementById('st_grade').value=gradesList[0];
-  document.getElementById('st_section').value="أ";
-  document.getElementById('subjects_body').innerHTML="";
-  addSubjectRow();
-}
-
 function addSubjectRow(d){
   let t=document.getElementById('subjects_body');
   let tr=document.createElement("tr");
@@ -180,19 +167,27 @@ async function saveStudent(){
   }catch(e){alert("خطأ أثناء الحفظ");console.log(e);}
 }
 
-async function loadStudentByCode(){
+async function loadStudent(){
   let c=document.getElementById('st_code').value.trim();
-  if(!c){alert("أدخل كود الطالب");return;}
-  try{
-    let doc=await db.collection("students").doc(c).get();
-    if(!doc.exists){alert("الطالب غير موجود");return;}
-    let st=doc.data();
-    document.getElementById('st_name').value=st.name||"";
-    document.getElementById('st_grade').value=st.grade||gradesList[0];
-    document.getElementById('st_section').value=st.section||"أ";
-    let t=document.getElementById('subjects_body');t.innerHTML="";
-    if(st.subjects){Object.keys(st.subjects).forEach(k=>{let sub=st.subjects[k];sub.subjectName=k;addSubjectRow(sub);});}
-  }catch(e){alert("خطأ أثناء التحميل");console.log(e);}
+  let n=document.getElementById('st_name').value.trim();
+  let queryRef = db.collection("students");
+  let doc;
+
+  if(c){
+    doc = await queryRef.doc(c).get();
+  } else if(n){
+    let snap = await queryRef.where("name", "==", n).get();
+    if(!snap.empty) doc = snap.docs[0];
+  }
+
+  if(!doc || !doc.exists){alert("الطالب غير موجود");return;}
+  let st=doc.data();
+  document.getElementById('st_code').value=st.code||"";
+  document.getElementById('st_name').value=st.name||"";
+  document.getElementById('st_grade').value=st.grade||gradesList[0];
+  document.getElementById('st_section').value=st.section||"أ";
+  let t=document.getElementById('subjects_body');t.innerHTML="";
+  if(st.subjects){Object.keys(st.subjects).forEach(k=>{let sub=st.subjects[k];sub.subjectName=k;addSubjectRow(sub);});}
 }
 
 async function deleteStudent(){
@@ -202,22 +197,9 @@ async function deleteStudent(){
   try{
     await db.collection("students").doc(c).delete();
     alert("تم حذف الطالب بنجاح");
-    clearForm();
+    document.getElementById('subjects_body').innerHTML="";
   }catch(e){alert("حدث خطأ أثناء الحذف");console.log(e);}
 }
-
-document.getElementById('searchInput').addEventListener('input', function() {
-  let filter = this.value.toLowerCase();
-  let rows = document.querySelectorAll('#subjects_body tr');
-  rows.forEach(r => {
-    let nameCell = r.querySelector('.sub-name');
-    if (nameCell && nameCell.value.toLowerCase().includes(filter)) {
-      r.style.display = '';
-    } else {
-      r.style.display = 'none';
-    }
-  });
-});
 
 initSelects();
 addSubjectRow();
