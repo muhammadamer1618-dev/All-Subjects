@@ -34,6 +34,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
 th,td{border:1px solid #000;text-align:center;padding:6px}
 th{background:#1976d2;color:#fff}
 .small-btn{padding:4px 8px;font-size:12px}
+#searchInput{width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
 </style>
 </head>
 <body>
@@ -66,8 +67,11 @@ th{background:#1976d2;color:#fff}
 
   <div class="box">
     <h3>مواد الطالب ودرجاته</h3>
+
+    <input type="text" id="searchInput" placeholder="ابحث باسم الطالب أو المادة">
+
     <button class="btn-secondary" onclick="addSubjectRow()">إضافة مادة</button>
-    <table>
+    <table id="studentsTable">
       <thead>
         <tr>
           <th>المادة</th><th>نوع الاختبار</th><th>الدرجة النهائية</th>
@@ -201,6 +205,19 @@ async function deleteStudent(){
     clearForm();
   }catch(e){alert("حدث خطأ أثناء الحذف");console.log(e);}
 }
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  let filter = this.value.toLowerCase();
+  let rows = document.querySelectorAll('#subjects_body tr');
+  rows.forEach(r => {
+    let nameCell = r.querySelector('.sub-name');
+    if (nameCell && nameCell.value.toLowerCase().includes(filter)) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+});
 
 initSelects();
 addSubjectRow();
