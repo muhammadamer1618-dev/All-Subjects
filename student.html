@@ -9,56 +9,41 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Calibri;background:#f4f4f4;margin:0;padding:20px}
-.container{max-width:900px;margin:auto;background:white;padding:20px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.2)}
-h1{text-align:center;color:#1976d2;margin-bottom:5px}
-h2{text-align:center;color:#d32f2f;margin-top:0}
-label{font-weight:bold}
-input{padding:10px;font-size:18px;width:200px;border-radius:8px;border:1px solid #999;margin-bottom:10px}
-button{padding:10px 20px;border:none;border-radius:8px;background:#1976d2;color:white;font-size:18px;font-weight:bold;cursor:pointer}
-button:hover{opacity:0.9}
-
+body{font-family:Calibri;background:#f4f4f4;margin:0;padding:0;text-align:center}
+.container{max-width:900px;margin:20px auto;padding:15px;background:#fff;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.1)}
+h1{color:#1976d2;margin-bottom:5px}
+h2{color:#b71c1c;margin-top:0}
 table{width:100%;border-collapse:collapse;margin-top:15px;font-size:16px}
-th,td{border:1px solid #888;padding:8px;text-align:center}
-th{background:#1976d2;color:white;font-size:17px}
-
-.blue{color:#0d47a1;font-weight:bold}
-.red{color:#d32f2f;font-weight:bold}
-
-.footer-sign{margin-top:20px}
-.designer{text-align:center;margin-top:25px;font-size:15px;color:#555}
-
-@media print{
-  body{background:white}
-  .no-print{display:none}
-  .container{box-shadow:none;border:1px solid #000}
-}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+th{background:#1976d2;color:#fff}
+.section-title{background:#0d47a1;color:#fff;font-weight:bold;padding:8px;margin-top:25px}
+.footer-table td{padding:25px;font-size:18px}
+.btn{padding:10px 20px;background:#1976d2;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-top:15px;font-size:16px}
+.btn:hover{opacity:0.9}
+#designer{color:#0d47a1;margin-top:20px;font-size:14px}
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-  <div class="no-print" style="text-align:center">
-    <label>أدخل كود الطالب</label><br>
-    <input id="code_input" placeholder="مثال: 1001">
-    <button onclick="loadStudent()">عرض النتيجة</button>
-  </div>
-
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2 id="exam_type">—</h2>
+  <h2 id="exam_title">نتيجة الاختبار</h2>
 
-  <!-- بيانات الطالب -->
-  <table id="student_info" style="display:none;">
+  <div class="section-title">بيانات الطالب</div>
+
+  <table>
     <tr><th>البيان</th><th>القيمة</th></tr>
-    <tr><td class="red">اسم الطالب</td><td id="st_name" class="blue"></td></tr>
-    <tr><td class="red">الكود</td><td id="st_code" class="blue"></td></tr>
-    <tr><td class="red">الصف</td><td id="st_grade" class="blue"></td></tr>
-    <tr><td class="red">الشعبة</td><td id="st_section" class="blue"></td></tr>
+    <tr><td>اسم الطالب</td><td id="s_name"></td></tr>
+    <tr><td>الكود</td><td id="s_code"></td></tr>
+    <tr><td>الصف</td><td id="s_grade"></td></tr>
+    <tr><td>الشعبة</td><td id="s_section"></td></tr>
   </table>
 
-  <!-- جدول المواد -->
-  <table id="subjects_table" style="display:none;">
+  <div class="section-title">درجات المواد</div>
+
+  <table id="marks_table">
     <thead>
       <tr>
         <th>المادة</th>
@@ -68,35 +53,42 @@ th{background:#1976d2;color:white;font-size:17px}
         <th>التقدير</th>
       </tr>
     </thead>
-    <tbody id="subjects_body"></tbody>
+    <tbody id="marks_body"></tbody>
   </table>
 
-  <!-- جدول التقدير العام -->
-  <table id="summary_table" style="display:none;">
-    <tr><th>المجموع الكلي</th><th>التقدير العام</th></tr>
+  <div class="section-title">المجموع الكلي</div>
+
+  <table>
     <tr>
-      <td id="total_mark" class="blue"></td>
-      <td id="final_rating" class="red"></td>
+      <th>المجموع</th>
+      <td id="total_display"></td>
+    </tr>
+    <tr>
+      <th>التقدير العام</th>
+      <td id="final_rating"></td>
     </tr>
   </table>
 
-  <!-- توقيع رئيس الإشراف -->
-  <table id="supervisor_table" style="display:none;margin-top:20px;">
-    <tr><th>رئيس الإشراف التربوي</th></tr>
-    <tr><td class="blue">أحمد سمير عباس</td></tr>
+  <div class="section-title">التوقيعات</div>
+
+  <table class="footer-table">
+    <tr>
+      <td>
+        <strong>رئيس الإشراف التربوي</strong><br>
+        أحمد سمير عباس
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>مدير المدرسة</strong><br>
+        سعيد بن علي الجمعان
+      </td>
+    </tr>
   </table>
 
-  <!-- توقيع المدير -->
-  <table id="manager_table" style="display:none;margin-top:20px;">
-    <tr><th>مدير المدرسة</th></tr>
-    <tr><td class="blue">سعيد بن علي الجمعان</td></tr>
-  </table>
+  <button class="btn" onclick="window.print()">طباعة النتيجة</button>
 
-  <div class="designer">تصميم محمد عامر أحمد</div>
-
-  <div class="no-print" style="text-align:center;margin-top:15px;">
-    <button onclick="window.print()">طباعة الشهادة</button>
-  </div>
+  <div id="designer">تصميم محمد عامر أحمد</div>
 
 </div>
 
@@ -112,7 +104,7 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
-function getRate(p){
+function calcRating(p){
   if(p>=90)return"ممتاز";
   if(p>=80)return"جيد جدًا";
   if(p>=70)return"جيد";
@@ -120,60 +112,53 @@ function getRate(p){
   return"ضعيف";
 }
 
-async function loadStudent(){
-  let code=document.getElementById("code_input").value.trim();
-  if(!code){alert("أدخل الكود");return;}
+async function loadResult(){
+  var code=prompt("أدخل كود الطالب:");
+  if(!code)return;
 
-  let doc=await db.collection("students").doc(code).get();
-  if(!doc.exists){alert("الطالب غير موجود");return;}
+  var snap=await db.collection("students").doc(code).get();
+  if(!snap.exists){
+    alert("الطالب غير موجود");
+    return;
+  }
 
-  let d=doc.data();
+  var s=snap.data();
+  document.getElementById("s_name").innerText=s.name||"—";
+  document.getElementById("s_code").innerText=s.code||"—";
+  document.getElementById("s_grade").innerText=s.grade||"—";
+  document.getElementById("s_section").innerText=s.section||"—";
+  document.getElementById("exam_title").innerText=s.examType||"نتيجة الاختبار";
 
-  document.getElementById("exam_type").innerText=d.examType||"—";
-
-  document.getElementById("st_name").innerText=d.name||"";
-  document.getElementById("st_code").innerText=d.code||"";
-  document.getElementById("st_grade").innerText=d.grade||"";
-  document.getElementById("st_section").innerText=d.section||"";
-
-  document.getElementById("student_info").style.display="table";
-
-  let subs=d.subjects||{};
-  let body=document.getElementById("subjects_body");
+  var body=document.getElementById("marks_body");
   body.innerHTML="";
 
-  let total=0, totalFull=0;
+  var total=0, fullTotal=0;
 
-  Object.keys(subs).forEach(sub=>{
-    let m=subs[sub].mark||0;
-    let f=subs[sub].fullMark||0;
-    let p=f?((m/f)*100).toFixed(0):0;
-    let r=getRate(p);
+  Object.keys(s.subjects||{}).forEach(sub=>{
+    var m=s.subjects[sub].mark||0;
+    var f=s.subjects[sub].fullMark||0;
+    var percent=f?Math.round((m/f)*100):0;
+    var rate=calcRating(percent);
 
-    total+=Number(m);
-    totalFull+=Number(f);
+    total+=m;
+    fullTotal+=f;
 
-    let tr=document.createElement("tr");
+    var tr=document.createElement("tr");
     tr.innerHTML=
       "<td>"+sub+"</td>"+
       "<td>"+m+"</td>"+
       "<td>"+f+"</td>"+
-      "<td>"+p+"%</td>"+
-      "<td>"+r+"</td>";
+      "<td>"+percent+"%</td>"+
+      "<td>"+rate+"</td>";
     body.appendChild(tr);
   });
 
-  document.getElementById("subjects_table").style.display="table";
-
-  let finalRate = totalFull ? getRate((total/totalFull)*100) : "—";
-
-  document.getElementById("total_mark").innerText = total +" / "+totalFull;
-  document.getElementById("final_rating").innerText = finalRate;
-
-  document.getElementById("summary_table").style.display="table";
-  document.getElementById("supervisor_table").style.display="table";
-  document.getElementById("manager_table").style.display="table";
+  var finalPercent=fullTotal?Math.round((total/fullTotal)*100):0;
+  document.getElementById("total_display").innerText=total+" / "+fullTotal;
+  document.getElementById("final_rating").innerText=calcRating(finalPercent);
 }
+
+loadResult();
 </script>
 
 </body>
