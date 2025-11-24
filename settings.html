@@ -2,30 +2,40 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>إعداد الاختبار والمواد لكل صف - مدارس الفلاح الأهلية</title>
+<title>إعدادات النظام - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:Calibri;background:#f4f4f4;margin:0;text-align:center}
-.header{background:#1976d2;color:#fff;padding:15px}
+body{font-family:Calibri;background:#eef2f7;margin:0}
+.header{background:#1976d2;color:#fff;text-align:center;padding:15px}
 .header h1{margin:0;font-size:24px}
 .header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b}
-.container{max-width:900px;margin:20px auto;background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,0.1);text-align:right}
+.container{max-width:1100px;margin:20px auto;padding:15px}
+.box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 10px rgba(0,0,0,0.08)}
 h3{margin-top:0;color:#1976d2}
 label{display:block;margin-top:5px}
-input,select,button{font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
+input,select,button{
+  font-family:Calibri;font-size:16px;padding:8px;margin-top:5px;
+  border-radius:6px;border:1px solid #999;box-sizing:border-box
+}
 input,select{width:100%}
 button{cursor:pointer;font-weight:bold;border:none}
 .btn-primary{background:#1976d2;color:#fff}
+.btn-danger{background:#d32f2f;color:#fff}
 .btn-secondary{background:#757575;color:#fff}
 .row{display:flex;flex-wrap:wrap;gap:10px}
+.col-3{flex:1 1 23%}
+.col-4{flex:1 1 30%}
 .col-6{flex:1 1 48%}
-@media(max-width:768px){.col-6{flex:1 1 100%}}
-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
-th,td{border:1px solid #ccc;text-align:center;padding:6px}
+.col-12{flex:1 1 100%}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
 th{background:#1976d2;color:#fff}
+tr:nth-child(even){background:#f9f9f9}
 .small-btn{padding:4px 8px;font-size:12px;border-radius:5px}
 .info{font-size:13px;color:#555;margin-top:5px}
 </style>
@@ -38,54 +48,61 @@ th{background:#1976d2;color:#fff}
 </div>
 
 <div class="container">
-  <h3>نوع الاختبار العام</h3>
-  <div class="row">
-    <div class="col-6">
-      <label>نوع الاختبار (يظهر في الشهادة)</label>
-      <input id="exam_type" placeholder="مثال: اختبار الفترة الأولى">
-      <div class="info">هذا النوع سيكون واحدًا لجميع الصفوف (فترة أولى / نهائي ...).</div>
+
+  <!-- نوع الاختبار العام -->
+  <div class="box">
+    <h3>نوع الاختبار العام</h3>
+    <div class="row">
+      <div class="col-6">
+        <label>نوع الاختبار (يظهر في الشهادة)</label>
+        <input id="exam_type" placeholder="مثال: اختبار منتصف الفصل">
+      </div>
+      <div class="col-6" style="display:flex;align-items:flex-end;">
+        <button class="btn-primary" style="width:100%" onclick="saveExamType()">حفظ نوع الاختبار</button>
+      </div>
     </div>
-    <div class="col-6" style="display:flex;align-items:flex-end">
-      <button class="btn-primary" style="width:100%" onclick="saveExamType()">حفظ نوع الاختبار</button>
+  </div>
+
+  <!-- استيراد الطلاب -->
+  <div class="box">
+    <h3>استيراد الطلاب من ملف Excel</h3>
+    <input type="file" id="excel_input" accept=".xlsx">
+    <button class="btn-primary" style="margin-top:10px" onclick="importStudentsExcel()">استيراد الأسماء</button>
+    <div class="info">الملف يجب أن يحتوي على: code - name - grade - section</div>
+  </div>
+
+  <!-- إعداد مواد الصف -->
+  <div class="box">
+    <h3>اختيار الصف لإعداد مواده</h3>
+    <select id="grade_select"></select>
+
+    <div id="subjects_area" style="margin-top:15px;display:none;">
+      <h3>مواد الصف المختار والدرجات النهائية</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>المادة</th>
+            <th>الدرجة النهائية</th>
+            <th>إزالة</th>
+          </tr>
+        </thead>
+        <tbody id="subjects_body"></tbody>
+      </table>
+
+      <button class="btn-secondary" style="margin-top:10px" onclick="addSubject()">إضافة مادة</button>
+      <button class="btn-primary" style="margin-top:10px" onclick="saveSubjects()">حفظ مواد الصف</button>
     </div>
   </div>
 
-  <hr style="margin:15px 0">
-
-  <h3>اختيار الصف لإعداد مواده</h3>
-  <div class="row">
-    <div class="col-6">
-      <label>الصف</label>
-      <select id="grade_select"></select>
-    </div>
-    <div class="col-6" style="display:flex;align-items:flex-end">
-      <button class="btn-secondary" style="width:100%" onclick="loadSubjectsForCurrentGrade()">تحميل مواد هذا الصف</button>
-    </div>
+  <div class="box">
+    <button class="btn-secondary" onclick="location='admin.html'">رجوع لصفحة المشرف</button>
   </div>
-  <div class="info">اختر الصف، ثم أضف المواد الخاصة به والدرجة النهائية لكل مادة، ثم اضغط "حفظ المواد".</div>
 
-  <h3 style="margin-top:20px">مواد الصف المختار والدرجات النهائية</h3>
-  <button class="btn-secondary" onclick="addSubjectRow()">إضافة مادة</button>
-  <table>
-    <thead>
-      <tr>
-        <th>المادة</th>
-        <th>الدرجة النهائية</th>
-        <th>حذف</th>
-      </tr>
-    </thead>
-    <tbody id="subjects_body"></tbody>
-  </table>
-  <button class="btn-primary" style="margin-top:10px" onclick="saveSubjectsForCurrentGrade()">حفظ مواد هذا الصف</button>
-
-  <div style="margin-top:20px;text-align:center">
-    <button class="btn-secondary" onclick="location='admin.html'">لوحة المشرف</button>
-    <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
-  </div>
 </div>
 
 <script>
-var firebaseConfig = {
+var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
   projectId:"all-subjects-14322",
@@ -102,89 +119,94 @@ var gradesList=[
   "1 ثانوي","2 ثانوي","3 ثانوي"
 ];
 
-var currentGrade=null;
-
-function initGrades(){
-  var sel=document.getElementById("grade_select");
-  gradesList.forEach(function(g){
+function fillGrades(){
+  var g=document.getElementById("grade_select");
+  gradesList.forEach(x=>{
     var o=document.createElement("option");
-    o.value=g;o.textContent=g;
-    sel.appendChild(o);
+    o.value=x;o.textContent=x;
+    g.appendChild(o);
   });
-  currentGrade=gradesList[0];
-  sel.value=currentGrade;
-  loadSubjectsForCurrentGrade();
 }
 
-document.getElementById("grade_select").addEventListener("change",function(){
-  currentGrade=this.value;
-  loadSubjectsForCurrentGrade();
-});
+function saveExamType(){
+  var val=document.getElementById("exam_type").value.trim();
+  db.collection("settings").doc("general").set({examType:val},{merge:true});
+  alert("تم حفظ نوع الاختبار");
+}
 
-async function loadExamType(){
-  try{
-    var doc=await db.collection("settings").doc("general").get();
-    if(doc.exists){
-      document.getElementById("exam_type").value=doc.data().examType||"";
+async function importStudentsExcel(){
+  var file=document.getElementById("excel_input").files[0];
+  if(!file){alert("اختر ملف Excel");return;}
+
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var data=new Uint8Array(e.target.result);
+    var workbook=XLSX.read(data,{type:"array"});
+    var sheet=workbook.Sheets[workbook.SheetNames[0]];
+    var rows=XLSX.utils.sheet_to_json(sheet,{header:1});
+
+    if(rows.length<2){alert("الملف فارغ");return;}
+
+    var added=0;
+    for(let i=1;i<rows.length;i++){
+      let r=rows[i];
+      let code=r[0],name=r[1],grade=r[2],section=r[3];
+      if(!code||!name||!grade||!section)continue;
+      await db.collection("students").doc(String(code)).set({
+        code:String(code),name,grade,section,subjects:{}
+      },{merge:true});
+      added++;
     }
-  }catch(e){console.log(e);}
+    alert("تم استيراد "+added+" طالب");
+  };
+  reader.readAsArrayBuffer(file);
 }
 
-async function saveExamType(){
-  var t=document.getElementById("exam_type").value.trim();
-  await db.collection("settings").doc("general").set({examType:t},{merge:true});
-  alert("تم حفظ نوع الاختبار العام");
+document.getElementById("grade_select").addEventListener("change",loadSubjects);
+
+async function loadSubjects(){
+  var grade=document.getElementById("grade_select").value;
+  document.getElementById("subjects_area").style.display="block";
+  var body=document.getElementById("subjects_body");
+  body.innerHTML="<tr><td colspan='3'>جاري التحميل...</td></tr>";
+
+  var doc=await db.collection("settings").doc("subjects_"+grade).get();
+  body.innerHTML="";
+
+  var list=doc.exists?doc.data().subjects:[];
+  list.forEach(s=>{
+    addSubjectRow(s.name,s.fullMark);
+  });
 }
 
-function addSubjectRow(data){
-  var tbody=document.getElementById("subjects_body");
+function addSubject(){
+  addSubjectRow("","");
+}
+
+function addSubjectRow(name,full){
+  var body=document.getElementById("subjects_body");
   var tr=document.createElement("tr");
   tr.innerHTML=
-    "<td><input class='sub-name' value='"+(data&&data.name?data.name:"")+"'></td>"+
-    "<td><input type='number' class='sub-full' value='"+(data&&data.fullMark?data.fullMark:"")+"'></td>"+
-    "<td><button class='small-btn btn-secondary' onclick='this.closest(\"tr\").remove()'>حذف</button></td>";
-  tbody.appendChild(tr);
+    "<td><input class='sname' value='"+name+"'></td>"+
+    "<td><input type='number' class='sfull' value='"+full+"'></td>"+
+    "<td><button class='btn-danger small-btn' onclick='this.closest(\"tr\").remove()'>حذف</button></td>";
+  body.appendChild(tr);
 }
 
-async function loadSubjectsForCurrentGrade(){
-  if(!currentGrade)return;
-  var tbody=document.getElementById("subjects_body");
-  tbody.innerHTML="<tr><td colspan='3'>جاري تحميل مواد الصف...</td></tr>";
-  try{
-    var doc=await db.collection("settings").doc("subjects_"+currentGrade).get();
-    tbody.innerHTML="";
-    if(doc.exists){
-      var arr=doc.data().subjects||[];
-      if(arr.length===0){
-        tbody.innerHTML="<tr><td colspan='3'>لا توجد مواد محفوظة لهذا الصف بعد</td></tr>";
-      }else{
-        arr.forEach(function(s){addSubjectRow(s);});
-      }
-    }else{
-      tbody.innerHTML="<tr><td colspan='3'>لم يتم إعداد مواد هذا الصف بعد</td></tr>";
-    }
-  }catch(e){
-    console.log(e);
-    tbody.innerHTML="<tr><td colspan='3'>خطأ في تحميل المواد</td></tr>";
-  }
-}
-
-async function saveSubjectsForCurrentGrade(){
-  if(!currentGrade){alert("اختر الصف أولاً");return;}
+async function saveSubjects(){
+  var grade=document.getElementById("grade_select").value;
   var rows=document.querySelectorAll("#subjects_body tr");
-  var arr=[];
-  rows.forEach(function(tr){
-    var name=tr.querySelector(".sub-name")?tr.querySelector(".sub-name").value.trim():"";
-    var full=tr.querySelector(".sub-full")?Number(tr.querySelector(".sub-full").value)||0:0;
-    if(!name)return;
-    arr.push({name:name,fullMark:full});
+  var subs=[];
+  rows.forEach(tr=>{
+    let name=tr.querySelector(".sname").value.trim();
+    let full=Number(tr.querySelector(".sfull").value)||0;
+    if(name)subs.push({name,fullMark:full});
   });
-  await db.collection("settings").doc("subjects_"+currentGrade).set({subjects:arr});
-  alert("تم حفظ مواد الصف: "+currentGrade);
+  await db.collection("settings").doc("subjects_"+grade).set({subjects:subs});
+  alert("تم حفظ مواد الصف");
 }
 
-initGrades();
-loadExamType();
+fillGrades();
 </script>
 
 </body>
