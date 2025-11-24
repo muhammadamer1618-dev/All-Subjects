@@ -1,1 +1,139 @@
-gg
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>إعداد الاختبار والمواد - مدارس الفلاح الأهلية</title>
+<link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+body{font-family:Calibri;background:#f4f4f4;margin:0;text-align:center}
+.header{background:#1976d2;color:#fff;padding:15px}
+.header h1{margin:0;font-size:24px}
+.header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b}
+.container{max-width:900px;margin:20px auto;background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,0.1);text-align:right}
+h3{margin-top:0;color:#1976d2}
+label{display:block;margin-top:5px}
+input,button{font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
+input{width:100%}
+button{cursor:pointer;font-weight:bold;border:none}
+.btn-primary{background:#1976d2;color:#fff}
+.btn-secondary{background:#757575;color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.col-6{flex:1 1 48%}
+@media(max-width:768px){.col-6{flex:1 1 100%}}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{border:1px solid #ccc;text-align:center;padding:6px}
+th{background:#1976d2;color:#fff}
+.small-btn{padding:4px 8px;font-size:12px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>مدارس الفلاح الأهلية</h1>
+  <h2>إعداد نوع الاختبار والمواد</h2>
+</div>
+
+<div class="container">
+  <h3>نوع الاختبار العام</h3>
+  <div class="row">
+    <div class="col-6">
+      <label>نوع الاختبار</label>
+      <input id="exam_type" placeholder="مثال: اختبار الفترة الأولى">
+    </div>
+    <div class="col-6" style="display:flex;align-items:flex-end">
+      <button class="btn-primary" style="width:100%" onclick="saveExamType()">حفظ نوع الاختبار</button>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px">المواد والدرجات النهائية</h3>
+  <button class="btn-secondary" onclick="addSubjectRow()">إضافة مادة</button>
+  <table>
+    <thead>
+      <tr>
+        <th>المادة</th>
+        <th>الدرجة النهائية</th>
+        <th>حذف</th>
+      </tr>
+    </thead>
+    <tbody id="subjects_body"></tbody>
+  </table>
+  <button class="btn-primary" style="margin-top:10px" onclick="saveSubjects()">حفظ جميع المواد</button>
+
+  <div style="margin-top:20px;text-align:center">
+    <button class="btn-secondary" onclick="location='admin.html'">لوحة المشرف</button>
+    <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
+  </div>
+</div>
+
+<script>
+var firebaseConfig = {
+  apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
+  authDomain:"all-subjects-14322.firebaseapp.com",
+  projectId:"all-subjects-14322",
+  storageBucket:"all-subjects-14322.firebasestorage.app",
+  messagingSenderId:"813955287168",
+  appId:"1:813955287168:web:07efa7dde95b117b9bbe65"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.firestore();
+
+async function loadExamType(){
+  try{
+    var doc=await db.collection("settings").doc("general").get();
+    if(doc.exists){
+      var d=doc.data();
+      document.getElementById("exam_type").value=d.examType||"";
+    }
+  }catch(e){console.log(e);}
+}
+
+async function saveExamType(){
+  var t=document.getElementById("exam_type").value.trim();
+  await db.collection("settings").doc("general").set({examType:t},{merge:true});
+  alert("تم حفظ نوع الاختبار العام");
+}
+
+function addSubjectRow(data){
+  var tbody=document.getElementById("subjects_body");
+  var tr=document.createElement("tr");
+  tr.innerHTML=
+    "<td><input class='sub-name' value='"+(data&&data.name?data.name:"")+"'></td>"+
+    "<td><input type='number' class='sub-full' value='"+(data&&data.fullMark?data.fullMark:"")+"'></td>"+
+    "<td><button class='small-btn btn-secondary' onclick='this.closest(\"tr\").remove()'>حذف</button></td>";
+  tbody.appendChild(tr);
+}
+
+async function loadSubjects(){
+  try{
+    var doc=await db.collection("settings").doc("subjects").get();
+    if(doc.exists){
+      var arr=doc.data().subjects||[];
+      var tbody=document.getElementById("subjects_body");
+      tbody.innerHTML="";
+      arr.forEach(function(s){addSubjectRow(s);});
+    }
+  }catch(e){console.log(e);}
+}
+
+async function saveSubjects(){
+  var rows=document.querySelectorAll("#subjects_body tr");
+  var arr=[];
+  rows.forEach(function(tr){
+    var name=tr.querySelector(".sub-name").value.trim();
+    var full=Number(tr.querySelector(".sub-full").value)||0;
+    if(!name)return;
+    arr.push({name:name,fullMark:full});
+  });
+  await db.collection("settings").doc("subjects").set({subjects:arr});
+  alert("تم حفظ قائمة المواد والدرجات النهائية");
+}
+
+loadExamType();
+loadSubjects();
+</script>
+
+</body>
+</html>
