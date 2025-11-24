@@ -2,160 +2,154 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>شهادة نتائج الطالب - مدارس الفلاح الأهلية</title>
+<title>شهادة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body {
+body{
   font-family: Calibri;
-  background: #f5f6fa;
-  margin: 0;
-  padding: 25px;
+  background: #eef2f7;
+  margin:0;
+  padding:0;
 }
-.container {
-  max-width: 1000px;
-  margin: auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  padding: 25px;
+.header{
+  background:#1976d2;
+  color:#fff;
+  text-align:center;
+  padding:15px;
 }
-h1 {
-  color: #1565c0;
-  text-align: center;
-  font-size: 32px;
-  margin-bottom: 5px;
+.header h1{
+  margin:0;
+  font-size:24px;
 }
-h2 {
-  color: #d32f2f;
-  text-align: center;
-  margin-top: 0;
+.header h2{
+  margin:5px 0 0;
+  font-size:18px;
+  color:#ffeb3b;
 }
-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #1976d2;
-  border-radius: 8px;
-  font-size: 18px;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  box-sizing: border-box;
+.container{
+  max-width:900px;
+  margin:25px auto;
+  background:#fff;
+  border-radius:15px;
+  box-shadow:0 0 12px rgba(0,0,0,0.15);
+  padding:25px;
 }
-.btn {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  font-weight: bold;
+.info{
+  background:#e3f2fd;
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:15px;
 }
-.view {background: #1976d2; color: #fff;}
-.print {background: #388e3c; color: #fff;}
-.back {background: #757575; color: #fff;}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 25px;
-  font-size: 18px;
+.info label{
+  font-weight:bold;
+  color:#0d47a1;
+  display:inline-block;
+  width:130px;
 }
-th, td {
-  border: 2px solid #1976d2;
-  padding: 10px;
-  text-align: center;
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
 }
-th {
-  background: #42a5f5;
-  color: #fff;
+th,td{
+  border:1px solid #aaa;
+  text-align:center;
+  padding:8px;
 }
-tfoot td {
-  background: #ffeb99;
-  font-weight: bold;
-  color: #5d4037;
+th{
+  background:#1976d2;
+  color:#fff;
 }
-.info-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+tfoot td{
+  background:#f5f5f5;
+  font-weight:bold;
 }
-.info-table td {
-  border: 2px solid #90caf9;
-  padding: 10px;
-  font-size: 18px;
-  color: #0d47a1;
-  background: #e3f2fd;
+input,button{
+  font-family: Calibri;
+  font-size:16px;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #999;
 }
-.footer {
-  text-align: left;
-  margin-top: 20px;
-  font-size: 14px;
-  color: #555;
+input{
+  width:60%;
 }
-@media print {
-  .btn, #code {display:none;}
-  body {background:#fff;}
+button{
+  background:#1976d2;
+  color:#fff;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  opacity:0.9;
+}
+.center{
+  text-align:center;
+}
+.footer{
+  text-align:left;
+  font-size:13px;
+  margin-top:25px;
+  color:#1976d2;
+  font-weight:bold;
 }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="header">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>قسم النتائج الأكاديمية</h2>
+  <h2>شهادة درجات الطالب</h2>
+</div>
 
-  <input id="code" placeholder="ادخل كود الطالب">
-  <button onclick="loadData()" class="btn view">عرض النتيجة</button>
-  <button onclick="window.print()" class="btn print">طباعة</button>
-  <button onclick="location='index.html'" class="btn back">الصفحة الرئيسية</button>
+<div class="container">
 
-  <div id="cert" style="display:none">
-    <table class="info-table">
+  <div class="center" style="margin-bottom:20px;">
+    <input id="studentCode" placeholder="أدخل كود الطالب">
+    <button onclick="loadStudent()">عرض النتيجة</button>
+  </div>
+
+  <div id="studentInfo" class="info" style="display:none;">
+    <p><label>كود الطالب:</label><span id="code"></span></p>
+    <p><label>اسم الطالب:</label><span id="name"></span></p>
+    <p><label>الصف:</label><span id="grade"></span></p>
+    <p><label>الشعبة:</label><span id="section"></span></p>
+  </div>
+
+  <table id="marksTable" style="display:none;">
+    <thead>
       <tr>
-        <td>الاسم: <span id="student_name"></span></td>
-        <td>الصف: <span id="grade"></span></td>
-        <td>الشعبة: <span id="section"></span></td>
+        <th>المادة</th>
+        <th>نوع الاختبار</th>
+        <th>الدرجة النهائية</th>
+        <th>درجة الطالب</th>
+        <th>التقدير</th>
+        <th>اسم المعلم</th>
+        <th>مشرف المادة</th>
       </tr>
-    </table>
-
-    <table id="subjects_table">
-      <thead>
-        <tr>
-          <th>المادة</th>
-          <th>نوع الاختبار</th>
-          <th>الدرجة النهائية</th>
-          <th>درجة الطالب</th>
-          <th>التقدير</th>
-          <th>المعلم</th>
-          <th>مشرف المادة</th>
-        </tr>
-      </thead>
-      <tbody id="subjects_body"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3" style="background:#ffca28;color:#000;">المجموع الكلي والتقدير العام</td>
-          <td id="total_marks"></td>
-          <td id="overall_rating"></td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>
-
-    <table style="margin-top:30px;">
+    </thead>
+    <tbody id="marksBody"></tbody>
+    <tfoot>
       <tr>
-        <th>رئيس قسم الإشراف</th>
-        <th>مدير المدرسة</th>
+        <td colspan="2">المجموع الكلي</td>
+        <td id="fullTotal">0</td>
+        <td id="totalMarks">0</td>
+        <td colspan="3" id="overallRating">—</td>
       </tr>
-      <tr>
-        <td>أحمد سمير عباس</td>
-        <td>سعيد بن علي الجمعان</td>
-      </tr>
-    </table>
+    </tfoot>
+  </table>
 
-    <div class="footer">تصميم محمد عامر أحمد</div>
+  <div id="noData" class="center" style="display:none;color:#d32f2f;margin-top:20px;">
+    لا توجد بيانات للطالب المدخل.
+  </div>
+
+  <div class="footer">
+    تصميم محمد عامر أحمد
   </div>
 </div>
 
@@ -171,62 +165,78 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-function calcRating(mark, full){
-  let m = Number(mark);
-  let f = Number(full);
+function calcRating(m, f){
+  m = Number(m); f = Number(f);
   if(!m || !f) return "—";
   let p = (m/f)*100;
-  if(p>=90) return "ممتاز";
-  if(p>=80) return "جيد جدًا";
-  if(p>=70) return "جيد";
-  if(p>=60) return "مقبول";
+  if(p >= 90) return "ممتاز";
+  if(p >= 80) return "جيد جدًا";
+  if(p >= 70) return "جيد";
+  if(p >= 60) return "مقبول";
   return "ضعيف";
 }
 
-async function loadData(){
-  let c = document.getElementById('code').value.trim();
-  if(!c){alert("ادخل كود الطالب");return;}
+async function loadStudent(){
+  const code = document.getElementById("studentCode").value.trim();
+  if(!code){ alert("أدخل كود الطالب"); return; }
+
   try{
-    let doc = await db.collection("students").doc(c).get();
-    if(!doc.exists){alert("الكود غير موجود");return;}
-    let st = doc.data();
-    document.getElementById('cert').style.display="block";
-    document.getElementById('student_name').innerText = st.name || "";
-    document.getElementById('grade').innerText = st.grade || "";
-    document.getElementById('section').innerText = st.section || "";
+    const doc = await db.collection("students").doc(code).get();
+    if(!doc.exists){
+      document.getElementById("studentInfo").style.display = "none";
+      document.getElementById("marksTable").style.display = "none";
+      document.getElementById("noData").style.display = "block";
+      return;
+    }
 
-    let subs = st.subjects || {};
-    let tbody = document.getElementById('subjects_body');
+    const s = doc.data();
+    document.getElementById("studentInfo").style.display = "block";
+    document.getElementById("marksTable").style.display = "table";
+    document.getElementById("noData").style.display = "none";
+
+    document.getElementById("code").innerText = s.code || code;
+    document.getElementById("name").innerText = s.name || "";
+    document.getElementById("grade").innerText = s.grade || "";
+    document.getElementById("section").innerText = s.section || "";
+
+    const tbody = document.getElementById("marksBody");
     tbody.innerHTML = "";
-    let total = 0, totalFull = 0;
 
-    Object.keys(subs).forEach((key)=>{
-      let s = subs[key];
-      let rating = calcRating(s.mark, s.fullMark);
-      total += Number(s.mark)||0;
-      totalFull += Number(s.fullMark)||0;
-      let tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${key}</td>
-        <td>${s.exam || "—"}</td>
-        <td>${s.fullMark || 0}</td>
-        <td>${s.mark || 0}</td>
-        <td>${rating}</td>
-        <td>${s.teacher || "—"}</td>
-        <td>${s.supervisor || "—"}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    let total = 0;
+    let full = 0;
 
-    let overall = calcRating(total, totalFull);
-    document.getElementById('total_marks').innerText = `${total} / ${totalFull}`;
-    document.getElementById('overall_rating').innerText = overall;
+    if(s.subjects){
+      Object.keys(s.subjects).forEach(sub=>{
+        const d = s.subjects[sub];
+        const m = Number(d.mark)||0;
+        const f = Number(d.fullMark)||0;
+        total += m;
+        full += f;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${sub}</td>
+          <td>${d.exam||""}</td>
+          <td>${f}</td>
+          <td>${m}</td>
+          <td>${calcRating(m,f)}</td>
+          <td>${d.teacher||""}</td>
+          <td>${d.supervisor||""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("fullTotal").innerText = full;
+    document.getElementById("totalMarks").innerText = total;
+    document.getElementById("overallRating").innerText = full>0 ? calcRating(total, full) : "—";
 
   }catch(e){
-    alert("حدث خطأ في تحميل البيانات");
+    alert("خطأ أثناء تحميل البيانات");
     console.log(e);
   }
 }
 </script>
+
 </body>
 </html>
