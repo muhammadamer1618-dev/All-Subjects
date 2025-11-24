@@ -75,13 +75,20 @@ th{
 .red-text{color:#d32f2f;font-weight:bold}
 .blue-text{color:#1976d2;font-weight:bold}
 
-.footer-sign{
+.sign-table{
   margin-top:25px;
-  display:flex;
-  justify-content:space-between;
-  font-size:18px;
+  width:100%;
+  border-collapse:collapse;
+}
+.sign-table th{
+  background:#f2f2f2;
+  color:#000;
+  font-size:16px;
+}
+.sign-table td{
+  padding:10px;
   font-weight:bold;
-  color:#333;
+  font-size:18px;
 }
 
 .print-btn{
@@ -166,10 +173,17 @@ th{
       </table>
     </div>
 
-    <div class="footer-sign">
-      <div>رئيس قسم الإشراف التربوي<br>أحمد سمير عباس</div>
-      <div>مدير المدرسة<br>سعيد بن علي الجمعان</div>
-    </div>
+    <!-- NEW: signatures inside a table -->
+    <table class="sign-table">
+      <tr>
+        <th>رئيس قسم الإشراف التربوي</th>
+        <th>مدير المدرسة</th>
+      </tr>
+      <tr>
+        <td>أحمد سمير عباس</td>
+        <td>سعيد بن علي الجمعان</td>
+      </tr>
+    </table>
 
     <button class="print-btn" onclick="print()">طباعة</button>
 
@@ -196,8 +210,8 @@ var db=firebase.firestore();
 async function loadExamType(){
   let doc=await db.collection("settings").doc("general").get();
   if(doc.exists){
-    let t=doc.data().examType||"";
-    document.getElementById("exam_title").innerText=t;
+    document.getElementById("exam_title").innerText =
+      doc.data().examType || "";
   }
 }
 loadExamType();
