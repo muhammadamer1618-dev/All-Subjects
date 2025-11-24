@@ -68,7 +68,9 @@ tr:nth-child(even){background:#f9f9f9}
       <div class="col-3"><label>اسم الطالب</label><input id="new_name"></div>
       <div class="col-3"><label>الصف</label><select id="new_grade"></select></div>
       <div class="col-3"><label>الشعبة</label>
-        <select id="new_section"><option>أ</option><option>ب</option><option>ج</option><option>د</option><option>هـ</option></select>
+        <select id="new_section">
+          <option>أ</option><option>ب</option><option>ج</option><option>د</option><option>هـ</option>
+        </select>
       </div>
     </div>
 
@@ -80,13 +82,28 @@ tr:nth-child(even){background:#f9f9f9}
 
     <hr>
 
-    <!-- اختيار صف وعرض طلابه -->
+    <label>استيراد الطلاب من ملف Excel (الترتيب: code - name - grade - section)</label>
+    <input type="file" id="students_file" accept=".xlsx,.xls">
+    <button class="btn-secondary" style="margin-top:5px" onclick="importStudentsFromExcel()">استيراد الطلاب</button>
+
+    <hr>
+
     <div class="row">
-      <div class="col-3"><label>عرض طلاب صف</label><select id="show_grade" onchange="loadStudentsByGrade()"></select></div>
-      <div class="col-3"><label>أسماء طلاب الصف</label><select id="students_in_grade"><option>—</option></select></div>
+      <div class="col-3">
+        <label>عرض طلاب صف</label>
+        <select id="show_grade" onchange="loadStudentsByGrade()"></select>
+      </div>
+      <div class="col-3">
+        <label>أسماء طلاب الصف</label>
+        <select id="students_in_grade">
+          <option>—</option>
+        </select>
+      </div>
     </div>
 
-    <div class="info">المواد يتم إعدادها من صفحة الإعدادات لكل صف مرة واحدة.</div>
+    <div class="info">
+      المواد يتم إعدادها من صفحة الإعدادات لكل صف مرة واحدة فقط، ويتم هنا رصد درجات الطلاب فقط.
+    </div>
   </div>
 
   <!-- كشف الطلاب -->
@@ -96,10 +113,7 @@ tr:nth-child(even){background:#f9f9f9}
     <div style="margin-bottom:8px;font-size:14px">
       <span>نوع الاختبار: </span>
       <span id="current_exam_type" class="badge">—</span>
-
-      <button class="btn-secondary" style="float:left" onclick="location='settings.html'">
-        إعداد المواد والاختبار
-      </button>
+      <button class="btn-secondary" style="float:left" onclick="location='settings.html'">إعداد المواد والاختبار</button>
     </div>
 
     <table>
@@ -124,11 +138,10 @@ tr:nth-child(even){background:#f9f9f9}
     <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
     <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
   </div>
+
 </div>
 
 <script>
-/* ------------------------ Firebase ------------------------ */
-
 var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
@@ -139,8 +152,6 @@ var firebaseConfig={
 };
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
-
-/* ------------------------ بيانات النظام ------------------------ */
 
 var gradesList=[
   "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
@@ -153,7 +164,23 @@ var studentsCache=[];
 var studentsByCode={};
 var subjectsCacheByGrade={};
 
-/* ------------------------ تحميل الإعدادات ------------------------ */
+const gradeOrder={
+  "1 ابتدائي":1,"2 ابتدائي":2,"3 ابتدائي":3,
+  "4 ابتدائي":4,"5 ابتدائي":5,"6 ابتدائي":6,
+  "1 متوسط":7,"2 متوسط":8,"3 متوسط":9,
+  "1 ثانوي":10,"2 ثانوي":11,"3 ثانوي":12
+};
+
+function calcRating(m,f){
+  m=Number(m);f=Number(f);
+  if(!m||!f)return"";
+  var p=(m/f)*100;
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
+}
 
 async function loadSettings(){
   try{
@@ -168,28 +195,15 @@ async function loadSettings(){
   }catch(e){console.log(e);}
 }
 
-/* ------------------------ ترتيب الصفوف ------------------------ */
-const gradeOrder={
-  "1 ابتدائي":1,"2 ابتدائي":2,"3 ابتدائي":3,
-  "4 ابتدائي":4,"5 ابتدائي":5,"6 ابتدائي":6,
-  "1 متوسط":7,"2 متوسط":8,"3 متوسط":9,
-  "1 ثانوي":10,"2 ثانوي":11,"3 ثانوي":12
-};
-
-/* ------------------------ إعداد القوائم ------------------------ */
-
 function initGrades(){
   var g1=document.getElementById("new_grade");
   var g2=document.getElementById("show_grade");
-
   gradesList.forEach(x=>{
-    let o1=document.createElement("option"); o1.value=x;o1.textContent=x;
-    let o2=document.createElement("option"); o2.value=x;o2.textContent=x;
-    g1.appendChild(o1); g2.appendChild(o2);
+    let o1=document.createElement("option");o1.value=x;o1.textContent=x;
+    let o2=document.createElement("option");o2.value=x;o2.textContent=x;
+    g1.appendChild(o1);g2.appendChild(o2);
   });
 }
-
-/* ------------------------ إضافة طالب ------------------------ */
 
 async function addNewStudent(){
   let code=document.getElementById("new_code").value.trim();
@@ -203,15 +217,13 @@ async function addNewStudent(){
     code, name, grade, section,
     examType,
     subjects:{}
-  });
+  },{merge:true});
 
   alert("تم إضافة الطالب");
   document.getElementById("new_code").value="";
   document.getElementById("new_name").value="";
   loadStudents();
 }
-
-/* ------------------------ حذف جميع الطلاب ------------------------ */
 
 async function deleteAllStudents(){
   if(!confirm("هل تريد حذف جميع الطلاب؟"))return;
@@ -223,27 +235,24 @@ async function deleteAllStudents(){
   loadStudents();
 }
 
-/* ------------------------ تحميل طلاب صف معين ------------------------ */
-
 async function loadStudentsByGrade(){
   let grade=document.getElementById("show_grade").value;
   let sel=document.getElementById("students_in_grade");
   sel.innerHTML="<option>جاري التحميل...</option>";
-
   let snap=await db.collection("students").where("grade","==",grade).get();
   sel.innerHTML="";
-  if(snap.empty){sel.innerHTML="<option>لا يوجد طلاب</option>";return;}
-
+  if(snap.empty){
+    sel.innerHTML="<option>لا يوجد طلاب</option>";
+    return;
+  }
   snap.forEach(doc=>{
     let s=doc.data();
     let opt=document.createElement("option");
     opt.value=s.code;
-    opt.textContent=s.name+" — "+s.code;
+    opt.textContent=(s.name||"")+" — "+(s.code||"");
     sel.appendChild(opt);
   });
 }
-
-/* ------------------------ تحميل الطلاب وترتيبهم ------------------------ */
 
 async function loadStudents(){
   let fname=document.getElementById("filter_name").value.trim();
@@ -253,17 +262,15 @@ async function loadStudents(){
   tbody.innerHTML="<tr><td colspan='8'>جاري التحميل...</td></tr>";
 
   let snap=await db.collection("students").get();
-
   studentsCache=[];
   studentsByCode={};
 
   snap.forEach(doc=>{
     let s=doc.data();
     studentsCache.push(s);
-    studentsByCode[s.code]=s;
+    if(s.code)studentsByCode[s.code]=s;
   });
 
-  // ترتيب حسب الصف ثم الاسم
   studentsCache.sort((a,b)=>{
     let g1=gradeOrder[a.grade]||999;
     let g2=gradeOrder[b.grade]||999;
@@ -296,17 +303,16 @@ async function loadStudents(){
 
     let tr=document.createElement("tr");
     tr.innerHTML=
-      "<td>"+s.code+"</td>"+
-      "<td>"+s.name+"</td>"+
-      "<td>"+s.grade+"</td>"+
-      "<td>"+s.section+"</td>"+
+      "<td>"+(s.code||"")+"</td>"+
+      "<td>"+(s.name||"")+"</td>"+
+      "<td>"+(s.grade||"")+"</td>"+
+      "<td>"+(s.section||"")+"</td>"+
       "<td>"+count+"</td>"+
       "<td>"+total+"/"+full+"</td>"+
       "<td>"+rating+"</td>"+
       "<td><button class='small-btn btn-primary' onclick='toggleSubjects(\""+s.code+"\")'>رصد</button></td>";
     tbody.appendChild(tr);
 
-    // سطر المواد
     let subTr=document.createElement("tr");
     subTr.id="subs_"+s.code;
     subTr.style.display="none";
@@ -314,14 +320,11 @@ async function loadStudents(){
       "<table class='sub-table' width='100%'>"+
       "<thead><tr><th>المادة</th><th>النهائية</th><th>درجة الطالب</th><th>التقدير</th></tr></thead>"+
       "<tbody id='subs_body_"+s.code+"'></tbody></table>"+
-      "<button class='btn-primary' style='margin-top:5px' onclick='saveSubjects(\""+s.code+"\")'>حفظ</button>"+
+      "<button class='btn-primary' style='margin-top:5px' onclick='saveSubjects(\""+s.code+"\")'>حفظ درجات الطالب</button>"+
       "</td>";
-
     tbody.appendChild(subTr);
   });
 }
-
-/* ------------------------ تحميل مواد الصف ------------------------ */
 
 async function getSubjectsTemplateForGrade(grade){
   if(subjectsCacheByGrade[grade])return subjectsCacheByGrade[grade];
@@ -338,7 +341,9 @@ async function toggleSubjects(code){
   if(row.style.display==="none"){
     await buildSubjectsRows(code);
     row.style.display="table-row";
-  }else row.style.display="none";
+  }else{
+    row.style.display="none";
+  }
 }
 
 async function buildSubjectsRows(code){
@@ -348,7 +353,7 @@ async function buildSubjectsRows(code){
 
   let template=await getSubjectsTemplateForGrade(grade);
   if(!template.length){
-    body.innerHTML="<tr><td colspan='4'>لا توجد مواد لهذا الصف.</td></tr>";
+    body.innerHTML="<tr><td colspan='4'>لا توجد مواد لهذا الصف. يرجى ضبطها من صفحة الإعدادات.</td></tr>";
     return;
   }
 
@@ -368,11 +373,10 @@ async function buildSubjectsRows(code){
       "<td>"+full+"</td>"+
       "<td><input type='number' class='sub-mark' value='"+mark+"' style='width:80px'></td>"+
       "<td class='sub-rate'>"+rating+"</td>";
-
     body.appendChild(tr);
 
     let markInput=tr.querySelector(".sub-mark");
-    markInput.addEventListener("input",()=>{
+    markInput.addEventListener("input",function(){
       let m=Number(markInput.value)||0;
       tr.querySelector(".sub-rate").innerText=calcRating(m,full);
     });
@@ -382,9 +386,11 @@ async function buildSubjectsRows(code){
 async function saveSubjects(code){
   let student=studentsByCode[code];
   let grade=student.grade;
-
   let template=await getSubjectsTemplateForGrade(grade);
-  if(!template.length){alert("لا توجد مواد لهذا الصف");return;}
+  if(!template.length){
+    alert("لا توجد مواد محفوظة لهذا الصف");
+    return;
+  }
 
   let body=document.getElementById("subs_body_"+code);
   let rows=body.querySelectorAll("tr");
@@ -394,22 +400,20 @@ async function saveSubjects(code){
     let name=template[i].name;
     let full=template[i].fullMark;
     let mark=Number(tr.querySelector(".sub-mark").value)||0;
-    subs[name]={fullMark:full,mark,rating:calcRating(mark,full)};
+    subs[name]={fullMark:full,mark:mark,rating:calcRating(mark,full)};
   });
 
   await db.collection("students").doc(code).set({
     subjects:subs,
-    examType
+    examType:examType
   },{merge:true});
 
   alert("تم حفظ درجات الطالب");
   loadStudents();
 }
 
-/* ------------------------ التصدير Excel ------------------------ */
-
 function exportToExcel(){
-  let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير"]];
+  let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير العام"]];
   document.querySelectorAll("#students_body tr").forEach(tr=>{
     if(tr.children.length===8){
       rows.push([
@@ -425,11 +429,70 @@ function exportToExcel(){
   });
   let ws=XLSX.utils.aoa_to_sheet(rows);
   let wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Students");
+  XLSX.utils.book_append_sheet(wb,ws,"students");
   XLSX.writeFile(wb,"students.xlsx");
 }
 
-/* ------------------------ بداية التشغيل ------------------------ */
+async function importStudentsFromExcel(){
+  let input=document.getElementById("students_file");
+  let file=input.files[0];
+  if(!file){
+    alert("اختر ملف الطلاب أولاً");
+    return;
+  }
+
+  let reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      let data=new Uint8Array(e.target.result);
+      let wb=XLSX.read(data,{type:"array"});
+      let ws=wb.Sheets[wb.SheetNames[0]];
+      let rows=XLSX.utils.sheet_to_json(ws,{header:1});
+
+      if(!rows.length){
+        alert("الملف فارغ");
+        return;
+      }
+
+      let batch=db.batch();
+      let count=0;
+
+      rows.forEach((r,index)=>{
+        if(index===0) return; // skip header if there is
+        let code=(r[0]||"").toString().trim();
+        let name=(r[1]||"").toString().trim();
+        let grade=(r[2]||"").toString().trim();
+        let section=(r[3]||"").toString().trim();
+        if(!code || !name) return;
+
+        let ref=db.collection("students").doc(code);
+        batch.set(ref,{
+          code:code,
+          name:name,
+          grade:grade,
+          section:section,
+          examType:examType||"",
+          subjects:{}
+        },{merge:true});
+        count++;
+      });
+
+      if(count===0){
+        alert("لم يتم العثور على بيانات طلاب صالحة في الملف");
+        return;
+      }
+
+      await batch.commit();
+      alert("تم استيراد الطلاب بنجاح: "+count+" طالب");
+      input.value="";
+      loadStudents();
+    }catch(err){
+      console.log(err);
+      alert("خطأ أثناء قراءة الملف");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 initGrades();
 loadSettings();
