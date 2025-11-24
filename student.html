@@ -2,137 +2,186 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>شهادة درجات الطالب - مدارس الفلاح الأهلية</title>
+<title>شهادة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{
-  font-family: Calibri;
-  background: #f9f9f9;
-  margin: 0;
-  text-align: center;
+  font-family:Calibri;
+  background:#f4f4f4;
+  margin:0;
+  padding:0;
 }
-.header{
-  background: #1976d2;
-  color: white;
-  padding: 15px;
-  border-radius: 0 0 15px 15px;
-}
-h1{margin: 0;font-size: 26px;}
-h2{margin: 5px 0 0;color: #ffeb3b;font-size: 18px;}
 .container{
-  max-width: 900px;
-  margin: 20px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  max-width:900px;
+  margin:20px auto;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 0 10px rgba(0,0,0,0.15);
 }
+h1,h2,h3{text-align:center;margin:0}
+.title-main{color:#1976d2;font-size:28px;font-weight:bold}
+.exam-type{color:#d32f2f;margin-top:5px;font-size:20px}
+
+label{display:block;margin-top:10px}
+input{
+  width:100%;
+  padding:10px;
+  font-size:18px;
+  border:1px solid #999;
+  border-radius:6px;
+  margin-top:5px;
+}
+button{
+  width:100%;
+  padding:12px;
+  background:#1976d2;
+  color:white;
+  border:none;
+  font-size:18px;
+  margin-top:10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{opacity:0.9}
+
+.table-box{
+  margin-top:20px;
+  border:2px solid #1976d2;
+  border-radius:10px;
+  padding:15px;
+}
+
 table{
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
 }
-th, td{
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
+th,td{
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
 }
 th{
-  background: #1976d2;
-  color: white;
+  background:#1976d2;
+  color:white;
 }
-.data-table th{
-  background: none;
-  color: #1976d2;
-  font-size: 16px;
-  border: none;
+
+.red-text{color:#d32f2f;font-weight:bold}
+.blue-text{color:#1976d2;font-weight:bold}
+
+.footer-sign{
+  margin-top:25px;
+  display:flex;
+  justify-content:space-between;
+  font-size:18px;
+  font-weight:bold;
+  color:#333;
 }
-h3{
-  color: #1976d2;
-  margin-top: 25px;
-}
-.btn{
-  background: #1976d2;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.footer{
-  margin-top: 30px;
-  display: flex;
-  justify-content: space-around;
-  font-size: 16px;
-}
-.footer div{
-  background: #e3f2fd;
-  border-radius: 10px;
-  padding: 10px 20px;
-  width: 40%;
+
+.print-btn{
+  background:#388e3c;
 }
 .designer{
-  margin-top: 25px;
-  font-weight: bold;
-  color: #0d47a1;
-  font-size: 15px;
+  text-align:center;
+  margin-top:15px;
+  font-size:14px;
+  color:#1976d2;
+  font-weight:bold;
 }
+
 @media print{
-  .btn{display:none;}
-  body{background: white;}
-  .container{box-shadow:none;}
+  button,#search_section{display:none}
+  body{background:white}
+  .container{box-shadow:none;border:none}
+  .designer{margin-top:40px}
 }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>مدارس الفلاح الأهلية</h1>
-  <h2 id="exam_type_display">قسم النتائج الأكاديمية</h2>
-</div>
-
 <div class="container">
-  <div>
-    <label>كود الطالب:</label>
-    <input id="student_code" placeholder="أدخل كود الطالب" style="padding:8px;border:1px solid #ccc;border-radius:6px;width:200px;">
-    <button class="btn" onclick="loadStudent()">عرض النتيجة</button>
-    <button class="btn" onclick="window.print()">طباعة</button>
+
+  <h1 class="title-main">مدارس الفلاح الأهلية</h1>
+  <h2 id="exam_title" class="exam-type"></h2>
+
+  <div id="search_section">
+    <label>أدخل كود الطالب</label>
+    <input id="student_code" placeholder="مثال: 1001">
+    <button onclick="loadStudent()">عرض النتيجة</button>
   </div>
 
-  <div id="result_section" style="display:none;">
-    <h3>بيانات الطالب</h3>
-    <table class="data-table">
-      <tr><th>الاسم:</th><td id="st_name"></td><th>الصف:</th><td id="st_grade"></td></tr>
-      <tr><th>الشعبة:</th><td id="st_section"></td><th>نوع الاختبار:</th><td id="st_exam"></td></tr>
-    </table>
+  <div id="result_section" style="display:none">
 
-    <h3>درجات المواد</h3>
-    <table>
-      <thead>
-        <tr><th>المادة</th><th>الدرجة النهائية</th><th>درجة الطالب</th><th>التقدير</th></tr>
-      </thead>
-      <tbody id="subjects_body"></tbody>
-    </table>
+    <div class="table-box">
+      <h3>بيانات الطالب</h3>
 
-    <h3>المجموع الكلي والتقدير العام</h3>
-    <table>
-      <tr><th>المجموع الكلي</th><td id="total_score"></td><th>التقدير العام</th><td id="overall_rating"></td></tr>
-    </table>
-
-    <div class="footer">
-      <div><strong>مدير المدرسة</strong><br>سعيد بن علي الجمعان</div>
-      <div><strong>رئيس قسم الإشراف التربوي</strong><br>أحمد سمير عباس</div>
+      <table>
+        <tr>
+          <th>الاسم</th>
+          <td class="red-text" id="st_name"></td>
+        </tr>
+        <tr>
+          <th>الصف</th>
+          <td class="blue-text" id="st_grade"></td>
+        </tr>
+        <tr>
+          <th>الشعبة</th>
+          <td class="red-text" id="st_section"></td>
+        </tr>
+      </table>
     </div>
 
+    <div class="table-box">
+      <h3>الدرجات</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>المادة</th>
+            <th>الدرجة النهائية</th>
+            <th>درجة الطالب</th>
+            <th>التقدير</th>
+          </tr>
+        </thead>
+        <tbody id="subjects_table"></tbody>
+      </table>
+    </div>
+
+    <div class="table-box">
+      <h3>المجموع والتقدير العام</h3>
+      <table>
+        <tr>
+          <th>المجموع</th>
+          <td class="blue-text" id="total_marks"></td>
+        </tr>
+        <tr>
+          <th>التقدير العام</th>
+          <td class="red-text" id="overall_rating"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="footer-sign">
+      <div>رئيس قسم الإشراف التربوي<br>أحمد سمير عباس</div>
+      <div>مدير المدرسة<br>سعيد بن علي الجمعان</div>
+    </div>
+
+    <button class="print-btn" onclick="print()">طباعة</button>
+
     <div class="designer">تصميم محمد عامر أحمد</div>
+
   </div>
+
 </div>
 
 <script>
+
+// Firebase
 var firebaseConfig = {
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
@@ -145,11 +194,13 @@ firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
 async function loadExamType(){
-  const doc=await db.collection("settings").doc("general").get();
+  let doc=await db.collection("settings").doc("general").get();
   if(doc.exists){
-    document.getElementById("exam_type_display").innerText="نتائج "+doc.data().examType;
+    let t=doc.data().examType||"";
+    document.getElementById("exam_title").innerText=t;
   }
 }
+loadExamType();
 
 function calcRating(m,f){
   m=Number(m);f=Number(f);
@@ -165,32 +216,41 @@ function calcRating(m,f){
 async function loadStudent(){
   let code=document.getElementById("student_code").value.trim();
   if(!code){alert("أدخل كود الطالب");return;}
-  const doc=await db.collection("students").doc(code).get();
-  if(!doc.exists){alert("الطالب غير موجود");return;}
-  const s=doc.data();
-  document.getElementById("result_section").style.display="block";
-  document.getElementById("st_name").innerText=s.name||"";
-  document.getElementById("st_grade").innerText=s.grade||"";
-  document.getElementById("st_section").innerText=s.section||"";
-  document.getElementById("st_exam").innerText=s.examType||"";
 
-  const tbody=document.getElementById("subjects_body");
+  let doc=await db.collection("students").doc(code).get();
+  if(!doc.exists){alert("الطالب غير موجود");return;}
+
+  let s=doc.data();
+
+  document.getElementById("result_section").style.display="block";
+
+  document.getElementById("st_name").innerText=s.name;
+  document.getElementById("st_grade").innerText=s.grade;
+  document.getElementById("st_section").innerText=s.section;
+
+  let tbody=document.getElementById("subjects_table");
   tbody.innerHTML="";
+
   let total=0,full=0;
-  if(s.subjects){
-    Object.keys(s.subjects).forEach(k=>{
-      let sub=s.subjects[k];
-      let tr=document.createElement("tr");
-      tr.innerHTML=`<td>${k}</td><td>${sub.fullMark}</td><td>${sub.mark}</td><td>${sub.rating}</td>`;
-      tbody.appendChild(tr);
-      total+=Number(sub.mark)||0; full+=Number(sub.fullMark)||0;
-    });
-  }
-  document.getElementById("total_score").innerText=`${total}/${full}`;
-  document.getElementById("overall_rating").innerText=full?calcRating(total,full):"—";
+
+  Object.keys(s.subjects||{}).forEach(sub=>{
+    let d=s.subjects[sub];
+    total+=Number(d.mark)||0;
+    full+=Number(d.fullMark)||0;
+
+    let tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+sub+"</td>"+
+      "<td>"+d.fullMark+"</td>"+
+      "<td>"+d.mark+"</td>"+
+      "<td>"+d.rating+"</td>";
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("total_marks").innerText=total+" / "+full;
+  document.getElementById("overall_rating").innerText=full ? calcRating(total,full) : "—";
 }
 
-loadExamType();
 </script>
 
 </body>
