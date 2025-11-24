@@ -15,19 +15,20 @@ body{
   padding:0;
 }
 .header{
-  background:#1976d2;
-  color:#fff;
   text-align:center;
   padding:15px;
 }
-.header h1{margin:0;font-size:28px;}
-.header h2{margin:5px 0 0;font-size:20px;color:#ffeb3b;}
-.exam-title{
-  text-align:center;
-  font-size:22px;
+.header h1{
+  margin:0;
+  font-size:28px;
+  color:#1976d2;
+  font-weight:bold;
+}
+.header h2{
+  margin:5px 0 0;
+  font-size:20px;
   color:#d32f2f;
   font-weight:bold;
-  margin-top:10px;
 }
 .container{
   max-width:900px;
@@ -61,16 +62,17 @@ tfoot td{
   border-collapse:collapse;
 }
 .info-table th, .info-table td{
-  border:1px solid #1976d2;
+  border:1px solid #ccc;
   padding:10px;
   text-align:center;
+  background:transparent;
 }
 .info-table th{
-  color:#d32f2f; /* titles in red */
+  color:#d32f2f; /* red titles */
   font-weight:bold;
 }
 .info-table td{
-  color:#0d47a1; /* values in dark blue */
+  color:#0d47a1; /* blue values */
   font-weight:bold;
 }
 .center{text-align:center;}
@@ -109,14 +111,15 @@ button:hover{opacity:0.9;}
   cursor:pointer;
 }
 @media print{
-  .header, .print-btn, input, button {display:none;}
+  input, button, .print-btn {display:none;}
   .container{box-shadow:none;margin:0;}
+  .header{display:block;}
 }
 </style>
 </head>
 <body>
 
-<div class="header">
+<div class="header" id="printHeader">
   <h1>مدارس الفلاح الأهلية</h1>
   <h2 id="examTitle">شهادة درجات الطالب</h2>
 </div>
@@ -206,7 +209,6 @@ async function loadStudent(){
     document.getElementById("grade").innerText=s.grade||"";
     document.getElementById("section").innerText=s.section||"";
 
-    // عنوان الاختبار
     let firstExam = "شهادة درجات الطالب";
     if(s.subjects){
       const firstKey = Object.keys(s.subjects)[0];
