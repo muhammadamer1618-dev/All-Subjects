@@ -49,31 +49,59 @@ tr:nth-child(even){background:#f9f9f9}
 
 <div class="container">
 
+  <!-- إدارة الطلاب -->
   <div class="box">
     <h3>إدارة الطلاب</h3>
+
     <div class="row">
       <div class="col-3"><label>بحث بالاسم</label><input id="filter_name" placeholder="جزء من الاسم"></div>
       <div class="col-3"><label>بحث بالكود</label><input id="filter_code" placeholder="كود الطالب"></div>
-      <div class="col-3" style="display:flex;align-items:flex-end"><button class="btn-primary" style="width:100%" onclick="loadStudents()">بحث</button></div>
+      <div class="col-3" style="display:flex;align-items:flex-end">
+        <button class="btn-primary" style="width:100%" onclick="loadStudents()">بحث</button>
+      </div>
     </div>
+
     <hr>
+
     <div class="row">
-      <div class="col-3"><label>كود الطالب</label><input id="new_code" placeholder="مثال: 1001"></div>
+      <div class="col-3"><label>كود الطالب</label><input id="new_code"></div>
       <div class="col-3"><label>اسم الطالب</label><input id="new_name"></div>
       <div class="col-3"><label>الصف</label><select id="new_grade"></select></div>
-      <div class="col-3"><label>الشعبة</label><select id="new_section"><option>أ</option><option>ب</option><option>ج</option><option>د</option><option>هـ</option></select></div>
+      <div class="col-3"><label>الشعبة</label>
+        <select id="new_section"><option>أ</option><option>ب</option><option>ج</option><option>د</option><option>هـ</option></select>
+      </div>
     </div>
+
     <button class="btn-primary" onclick="addNewStudent()">إضافة طالب</button>
-    <div class="info">المواد والدرجات النهائية يتم إعدادها من صفحة الإعدادات لكل صف مرة واحدة فقط.</div>
+
+    <button class="btn-danger" onclick="deleteAllStudents()" style="margin-top:10px;width:100%">
+      حذف جميع الطلاب
+    </button>
+
+    <hr>
+
+    <!-- اختيار صف وعرض طلابه -->
+    <div class="row">
+      <div class="col-3"><label>عرض طلاب صف</label><select id="show_grade" onchange="loadStudentsByGrade()"></select></div>
+      <div class="col-3"><label>أسماء طلاب الصف</label><select id="students_in_grade"><option>—</option></select></div>
+    </div>
+
+    <div class="info">المواد يتم إعدادها من صفحة الإعدادات لكل صف مرة واحدة.</div>
   </div>
 
+  <!-- كشف الطلاب -->
   <div class="box">
     <h3>كشف الطلاب ورصد الدرجات</h3>
+
     <div style="margin-bottom:8px;font-size:14px">
-      <span>نوع الاختبار الحالي: </span>
-      <span id="current_exam_type" class="badge">لم يتم التحديد</span>
-      <button class="btn-secondary" style="float:left" onclick="location='settings.html'">إعداد المواد والاختبار</button>
+      <span>نوع الاختبار: </span>
+      <span id="current_exam_type" class="badge">—</span>
+
+      <button class="btn-secondary" style="float:left" onclick="location='settings.html'">
+        إعداد المواد والاختبار
+      </button>
     </div>
+
     <table>
       <thead>
         <tr>
@@ -92,15 +120,16 @@ tr:nth-child(even){background:#f9f9f9}
   </div>
 
   <div class="box">
-    <button class="btn-secondary" onclick="exportToExcel()">تصدير إلى Excel</button>
+    <button class="btn-secondary" onclick="exportToExcel()">تصدير Excel</button>
     <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
     <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
   </div>
-
 </div>
 
 <script>
-var firebaseConfig = {
+/* ------------------------ Firebase ------------------------ */
+
+var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
   projectId:"all-subjects-14322",
@@ -110,6 +139,8 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
+
+/* ------------------------ بيانات النظام ------------------------ */
 
 var gradesList=[
   "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
@@ -122,32 +153,14 @@ var studentsCache=[];
 var studentsByCode={};
 var subjectsCacheByGrade={};
 
-function initGrades(){
-  var g=document.getElementById("new_grade");
-  gradesList.forEach(function(x){
-    var o=document.createElement("option");
-    o.value=x;o.textContent=x;
-    g.appendChild(o);
-  });
-}
-
-function calcRating(m,f){
-  m=Number(m);f=Number(f);
-  if(!m||!f)return"";
-  var p=(m/f)*100;
-  if(p>=90)return"ممتاز";
-  if(p>=80)return"جيد جدًا";
-  if(p>=70)return"جيد";
-  if(p>=60)return"مقبول";
-  return"ضعيف";
-}
+/* ------------------------ تحميل الإعدادات ------------------------ */
 
 async function loadSettings(){
   try{
-    var gen=await db.collection("settings").doc("general").get();
-    if(gen.exists){
-      examType=gen.data().examType||"";
-      document.getElementById("current_exam_type").innerText=examType||"لم يتم التحديد";
+    let set=await db.collection("settings").doc("general").get();
+    if(set.exists){
+      examType=set.data().examType||"";
+      document.getElementById("current_exam_type").innerText=examType||"—";
       if(examType){
         document.getElementById("header_exam").innerText="لوحة المشرف - "+examType;
       }
@@ -155,198 +168,268 @@ async function loadSettings(){
   }catch(e){console.log(e);}
 }
 
+/* ------------------------ ترتيب الصفوف ------------------------ */
+const gradeOrder={
+  "1 ابتدائي":1,"2 ابتدائي":2,"3 ابتدائي":3,
+  "4 ابتدائي":4,"5 ابتدائي":5,"6 ابتدائي":6,
+  "1 متوسط":7,"2 متوسط":8,"3 متوسط":9,
+  "1 ثانوي":10,"2 ثانوي":11,"3 ثانوي":12
+};
+
+/* ------------------------ إعداد القوائم ------------------------ */
+
+function initGrades(){
+  var g1=document.getElementById("new_grade");
+  var g2=document.getElementById("show_grade");
+
+  gradesList.forEach(x=>{
+    let o1=document.createElement("option"); o1.value=x;o1.textContent=x;
+    let o2=document.createElement("option"); o2.value=x;o2.textContent=x;
+    g1.appendChild(o1); g2.appendChild(o2);
+  });
+}
+
+/* ------------------------ إضافة طالب ------------------------ */
+
 async function addNewStudent(){
-  var code=document.getElementById("new_code").value.trim();
-  var name=document.getElementById("new_name").value.trim();
-  var grade=document.getElementById("new_grade").value;
-  var section=document.getElementById("new_section").value;
+  let code=document.getElementById("new_code").value.trim();
+  let name=document.getElementById("new_name").value.trim();
+  let grade=document.getElementById("new_grade").value;
+  let section=document.getElementById("new_section").value;
+
   if(!code||!name){alert("أدخل كود واسم الطالب");return;}
+
   await db.collection("students").doc(code).set({
-    code:code,
-    name:name,
-    grade:grade,
-    section:section,
-    examType:examType||"",
+    code, name, grade, section,
+    examType,
     subjects:{}
-  },{merge:true});
+  });
+
   alert("تم إضافة الطالب");
   document.getElementById("new_code").value="";
   document.getElementById("new_name").value="";
   loadStudents();
 }
 
+/* ------------------------ حذف جميع الطلاب ------------------------ */
+
+async function deleteAllStudents(){
+  if(!confirm("هل تريد حذف جميع الطلاب؟"))return;
+  let snap=await db.collection("students").get();
+  let batch=db.batch();
+  snap.forEach(doc=>batch.delete(doc.ref));
+  await batch.commit();
+  alert("تم حذف جميع الطلاب");
+  loadStudents();
+}
+
+/* ------------------------ تحميل طلاب صف معين ------------------------ */
+
+async function loadStudentsByGrade(){
+  let grade=document.getElementById("show_grade").value;
+  let sel=document.getElementById("students_in_grade");
+  sel.innerHTML="<option>جاري التحميل...</option>";
+
+  let snap=await db.collection("students").where("grade","==",grade).get();
+  sel.innerHTML="";
+  if(snap.empty){sel.innerHTML="<option>لا يوجد طلاب</option>";return;}
+
+  snap.forEach(doc=>{
+    let s=doc.data();
+    let opt=document.createElement("option");
+    opt.value=s.code;
+    opt.textContent=s.name+" — "+s.code;
+    sel.appendChild(opt);
+  });
+}
+
+/* ------------------------ تحميل الطلاب وترتيبهم ------------------------ */
+
 async function loadStudents(){
-  var fname=document.getElementById("filter_name").value.trim();
-  var fcode=document.getElementById("filter_code").value.trim();
-  var tbody=document.getElementById("students_body");
+  let fname=document.getElementById("filter_name").value.trim();
+  let fcode=document.getElementById("filter_code").value.trim();
+  let tbody=document.getElementById("students_body");
+
   tbody.innerHTML="<tr><td colspan='8'>جاري التحميل...</td></tr>";
+
+  let snap=await db.collection("students").get();
+
   studentsCache=[];
   studentsByCode={};
-  try{
-    var snap=await db.collection("students").get();
-    tbody.innerHTML="";
-    snap.forEach(function(doc){
-      var s=doc.data();
-      studentsCache.push(s);
-      if(s.code)studentsByCode[s.code]=s;
-    });
-    var filtered=studentsCache.filter(function(s){
-      if(fcode && (!s.code || s.code.indexOf(fcode)===-1))return false;
-      if(fname && (!s.name || s.name.indexOf(fname)===-1))return false;
-      return true;
-    });
-    if(filtered.length===0){
-      tbody.innerHTML="<tr><td colspan='8'>لا توجد بيانات</td></tr>";
-      return;
-    }
-    filtered.forEach(function(s){
-      var total=0,full=0;
-      if(s.subjects){
-        Object.values(s.subjects).forEach(function(v){
-          total+=Number(v.mark)||0;
-          full+=Number(v.fullMark)||0;
-        });
-      }
-      var rating=full?calcRating(total,full):"—";
-      var count=s.subjects?Object.keys(s.subjects).length:0;
-      var tr=document.createElement("tr");
-      tr.innerHTML=
-        "<td>"+(s.code||"")+"</td>"+
-        "<td>"+(s.name||"")+"</td>"+
-        "<td>"+(s.grade||"")+"</td>"+
-        "<td>"+(s.section||"")+"</td>"+
-        "<td>"+count+"</td>"+
-        "<td>"+total+"/"+full+"</td>"+
-        "<td>"+rating+"</td>"+
-        "<td>"+
-          "<button class='small-btn btn-primary' onclick='toggleSubjects(\""+s.code+"\")'>رصد الدرجات</button> "+
-          "<button class='small-btn btn-danger' onclick='deleteStudent(\""+s.code+"\")'>حذف</button>"+
-        "</td>";
-      tbody.appendChild(tr);
 
-      var subTr=document.createElement("tr");
-      subTr.id="subs_"+s.code;
-      subTr.style.display="none";
-      subTr.innerHTML="<td colspan='8'>"+
-        "<table class='sub-table' width='100%'>"+
-        "<thead><tr><th>المادة</th><th>الدرجة النهائية</th><th>درجة الطالب</th><th>التقدير</th></tr></thead>"+
-        "<tbody id='subs_body_"+s.code+"'></tbody>"+
-        "</table>"+
-        "<button class='btn-primary' style='margin-top:5px' onclick='saveSubjects(\""+s.code+"\")'>حفظ درجات الطالب</button>"+
-        "</td>";
-      tbody.appendChild(subTr);
-    });
-  }catch(e){
-    console.log(e);
-    alert("خطأ في تحميل الطلاب");
+  snap.forEach(doc=>{
+    let s=doc.data();
+    studentsCache.push(s);
+    studentsByCode[s.code]=s;
+  });
+
+  // ترتيب حسب الصف ثم الاسم
+  studentsCache.sort((a,b)=>{
+    let g1=gradeOrder[a.grade]||999;
+    let g2=gradeOrder[b.grade]||999;
+    if(g1!==g2)return g1-g2;
+    return (a.name||"").localeCompare(b.name||"","ar");
+  });
+
+  let filtered=studentsCache.filter(s=>{
+    if(fcode && (!s.code || s.code.indexOf(fcode)===-1))return false;
+    if(fname && (!s.name || s.name.indexOf(fname)===-1))return false;
+    return true;
+  });
+
+  tbody.innerHTML="";
+  if(filtered.length===0){
+    tbody.innerHTML="<tr><td colspan='8'>لا توجد بيانات</td></tr>";
+    return;
   }
+
+  filtered.forEach(s=>{
+    let total=0,full=0,count=0;
+    if(s.subjects){
+      count=Object.keys(s.subjects).length;
+      Object.values(s.subjects).forEach(v=>{
+        total+=Number(v.mark)||0;
+        full+=Number(v.fullMark)||0;
+      });
+    }
+    let rating=full?calcRating(total,full):"—";
+
+    let tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+s.code+"</td>"+
+      "<td>"+s.name+"</td>"+
+      "<td>"+s.grade+"</td>"+
+      "<td>"+s.section+"</td>"+
+      "<td>"+count+"</td>"+
+      "<td>"+total+"/"+full+"</td>"+
+      "<td>"+rating+"</td>"+
+      "<td><button class='small-btn btn-primary' onclick='toggleSubjects(\""+s.code+"\")'>رصد</button></td>";
+    tbody.appendChild(tr);
+
+    // سطر المواد
+    let subTr=document.createElement("tr");
+    subTr.id="subs_"+s.code;
+    subTr.style.display="none";
+    subTr.innerHTML="<td colspan='8'>"+
+      "<table class='sub-table' width='100%'>"+
+      "<thead><tr><th>المادة</th><th>النهائية</th><th>درجة الطالب</th><th>التقدير</th></tr></thead>"+
+      "<tbody id='subs_body_"+s.code+"'></tbody></table>"+
+      "<button class='btn-primary' style='margin-top:5px' onclick='saveSubjects(\""+s.code+"\")'>حفظ</button>"+
+      "</td>";
+
+    tbody.appendChild(subTr);
+  });
 }
+
+/* ------------------------ تحميل مواد الصف ------------------------ */
 
 async function getSubjectsTemplateForGrade(grade){
   if(subjectsCacheByGrade[grade])return subjectsCacheByGrade[grade];
-  var doc=await db.collection("settings").doc("subjects_"+grade).get();
+  let doc=await db.collection("settings").doc("subjects_"+grade).get();
   if(doc.exists){
-    var arr=doc.data().subjects||[];
-    subjectsCacheByGrade[grade]=arr;
-    return arr;
+    subjectsCacheByGrade[grade]=doc.data().subjects||[];
+    return subjectsCacheByGrade[grade];
   }
   return [];
 }
 
 async function toggleSubjects(code){
-  var tr=document.getElementById("subs_"+code);
-  if(tr.style.display==="none"){
+  let row=document.getElementById("subs_"+code);
+  if(row.style.display==="none"){
     await buildSubjectsRows(code);
-    tr.style.display="table-row";
-  }else{
-    tr.style.display="none";
-  }
+    row.style.display="table-row";
+  }else row.style.display="none";
 }
 
 async function buildSubjectsRows(code){
-  var st=studentsByCode[code]||{};
-  var grade=st.grade;
-  var body=document.getElementById("subs_body_"+code);
-  if(!grade){
-    body.innerHTML="<tr><td colspan='4'>لا يوجد صف محدد لهذا الطالب</td></tr>";
-    return;
-  }
-  body.innerHTML="<tr><td colspan='4'>جاري تحميل مواد الصف...</td></tr>";
-  var template=await getSubjectsTemplateForGrade(grade);
+  let student=studentsByCode[code];
+  let grade=student.grade;
+  let body=document.getElementById("subs_body_"+code);
+
+  let template=await getSubjectsTemplateForGrade(grade);
   if(!template.length){
-    body.innerHTML="<tr><td colspan='4'>لم يتم إعداد مواد لهذا الصف بعد. يرجى الذهاب لصفحة الإعدادات.</td></tr>";
+    body.innerHTML="<tr><td colspan='4'>لا توجد مواد لهذا الصف.</td></tr>";
     return;
   }
+
   body.innerHTML="";
-  var existing=st.subjects||{};
-  template.forEach(function(sub){
-    var name=sub.name;
-    var full=sub.fullMark||0;
-    var old=existing[name]||{};
-    var mark=old.mark||"";
-    var rating=old.rating||calcRating(mark,full);
-    var tr=document.createElement("tr");
+  let existing=student.subjects||{};
+
+  template.forEach(sub=>{
+    let name=sub.name;
+    let full=sub.fullMark;
+    let old=existing[name]||{};
+    let mark=old.mark||"";
+    let rating=calcRating(mark,full);
+
+    let tr=document.createElement("tr");
     tr.innerHTML=
       "<td>"+name+"</td>"+
       "<td>"+full+"</td>"+
       "<td><input type='number' class='sub-mark' value='"+mark+"' style='width:80px'></td>"+
-      "<td class='sub-rate'>"+(rating||"")+"</td>";
+      "<td class='sub-rate'>"+rating+"</td>";
+
     body.appendChild(tr);
-    var markInput=tr.querySelector(".sub-mark");
-    markInput.addEventListener("input",function(){
-      var m=Number(markInput.value)||0;
+
+    let markInput=tr.querySelector(".sub-mark");
+    markInput.addEventListener("input",()=>{
+      let m=Number(markInput.value)||0;
       tr.querySelector(".sub-rate").innerText=calcRating(m,full);
     });
   });
 }
 
 async function saveSubjects(code){
-  var st=studentsByCode[code]||{};
-  var grade=st.grade;
-  if(!grade){alert("لا يوجد صف محدد لهذا الطالب");return;}
-  var template=await getSubjectsTemplateForGrade(grade);
-  if(!template.length){
-    alert("لا توجد مواد محفوظة لهذا الصف في الإعدادات");
-    return;
-  }
-  var body=document.getElementById("subs_body_"+code);
-  var rows=body.querySelectorAll("tr");
-  var subs={};
-  rows.forEach(function(tr,index){
-    if(index>=template.length)return;
-    var name=template[index].name;
-    var full=template[index].fullMark||0;
-    var m=Number(tr.querySelector(".sub-mark").value)||0;
-    subs[name]={fullMark:full,mark:m,rating:calcRating(m,full)};
+  let student=studentsByCode[code];
+  let grade=student.grade;
+
+  let template=await getSubjectsTemplateForGrade(grade);
+  if(!template.length){alert("لا توجد مواد لهذا الصف");return;}
+
+  let body=document.getElementById("subs_body_"+code);
+  let rows=body.querySelectorAll("tr");
+  let subs={};
+
+  rows.forEach((tr,i)=>{
+    let name=template[i].name;
+    let full=template[i].fullMark;
+    let mark=Number(tr.querySelector(".sub-mark").value)||0;
+    subs[name]={fullMark:full,mark,rating:calcRating(mark,full)};
   });
+
   await db.collection("students").doc(code).set({
     subjects:subs,
-    examType:examType||""
+    examType
   },{merge:true});
+
   alert("تم حفظ درجات الطالب");
   loadStudents();
 }
 
-async function deleteStudent(code){
-  if(!confirm("هل تريد حذف هذا الطالب بالكامل؟"))return;
-  await db.collection("students").doc(code).delete();
-  loadStudents();
-}
+/* ------------------------ التصدير Excel ------------------------ */
 
 function exportToExcel(){
-  var rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير العام"]];
-  var trs=document.querySelectorAll("#students_body tr");
-  trs.forEach(function(tr){
+  let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير"]];
+  document.querySelectorAll("#students_body tr").forEach(tr=>{
     if(tr.children.length===8){
-      var cols=[...tr.children].map(function(td){return td.innerText;});
-      rows.push(cols.slice(0,7));
+      rows.push([
+        tr.children[0].innerText,
+        tr.children[1].innerText,
+        tr.children[2].innerText,
+        tr.children[3].innerText,
+        tr.children[4].innerText,
+        tr.children[5].innerText,
+        tr.children[6].innerText
+      ]);
     }
   });
-  var ws=XLSX.utils.aoa_to_sheet(rows);
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"الطلاب");
-  XLSX.writeFile(wb,"كشف_الطلاب.xlsx");
+  let ws=XLSX.utils.aoa_to_sheet(rows);
+  let wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Students");
+  XLSX.writeFile(wb,"students.xlsx");
 }
+
+/* ------------------------ بداية التشغيل ------------------------ */
 
 initGrades();
 loadSettings();
