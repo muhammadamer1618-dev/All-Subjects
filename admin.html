@@ -111,6 +111,7 @@ tr:nth-child(even){background:#f9f9f9}
           <th>عدد المواد</th>
           <th>الإجمالي</th>
           <th>التقدير العام</th>
+          <th>إجراءات</th>
         </tr>
       </thead>
       <tbody id="students_body"></tbody>
@@ -199,7 +200,7 @@ function calcRating(m,f){
   return"ضعيف";
 }
 
-// إعداد نوع الاختبار
+// نوع الاختبار
 async function loadSettings(){
   try{
     let set=await db.collection("settings").doc("general").get();
@@ -256,13 +257,48 @@ async function deleteAllStudents(){
   loadStudents();
 }
 
+// حذف طالب واحد
+async function deleteStudent(code){
+  if(!code)return;
+  if(!confirm("هل تريد حذف هذا الطالب؟"))return;
+  await db.collection("students").doc(code).delete();
+  alert("تم حذف الطالب");
+  loadStudents();
+}
+
+// نقل طالب (مع/بدون درجات)
+async function moveStudent(code){
+  if(!code)return;
+  let doc=await db.collection("students").doc(code).get();
+  if(!doc.exists){
+    alert("الطالب غير موجود");
+    return;
+  }
+  let s=doc.data()||{};
+  let newGrade=prompt("أدخل الصف الجديد كما هو مكتوب (مثال: 1 ابتدائي):", s.grade||"");
+  if(!newGrade)return;
+  let newSection=prompt("أدخل الشعبة الجديدة (مثل: أ / ب / ج ...):", s.section||"");
+  if(!newSection)return;
+
+  let keep=confirm("اضغط (موافق) لنقل الطالب مع الاحتفاظ بالدرجات.\nاضغط (إلغاء) لنقله بدون الدرجات (سيتم مسح الدرجات).");
+
+  let updateData={grade:newGrade,section:newSection};
+  if(!keep){
+    updateData.subjects={};
+  }
+
+  await db.collection("students").doc(code).set(updateData,{merge:true});
+  alert("تم نقل الطالب بنجاح");
+  loadStudents();
+}
+
 // تحميل الطلاب (ملخص)
 async function loadStudents(){
   let fname=document.getElementById("filter_name").value.trim();
   let fcode=document.getElementById("filter_code").value.trim();
   let tbody=document.getElementById("students_body");
 
-  tbody.innerHTML="<tr><td colspan='7'>جاري التحميل...</td></tr>";
+  tbody.innerHTML="<tr><td colspan='8'>جاري التحميل...</td></tr>";
 
   let snap=await db.collection("students").get();
   studentsCache=[];
@@ -289,7 +325,7 @@ async function loadStudents(){
 
   tbody.innerHTML="";
   if(filtered.length===0){
-    tbody.innerHTML="<tr><td colspan='7'>لا توجد بيانات</td></tr>";
+    tbody.innerHTML="<tr><td colspan='8'>لا توجد بيانات</td></tr>";
     return;
   }
 
@@ -312,7 +348,11 @@ async function loadStudents(){
       "<td>"+(s.section||"")+"</td>"+
       "<td>"+count+"</td>"+
       "<td>"+total+"/"+full+"</td>"+
-      "<td>"+rating+"</td>";
+      "<td>"+rating+"</td>"+
+      "<td>"+
+        "<button class='small-btn btn-primary' onclick='moveStudent(\""+(s.code||"")+"\")'>نقل</button> "+
+        "<button class='small-btn btn-danger' onclick='deleteStudent(\""+(s.code||"")+"\")'>حذف</button>"+
+      "</td>";
     tbody.appendChild(tr);
   });
 }
@@ -328,7 +368,7 @@ async function getSubjectsTemplateForGrade(grade){
   return [];
 }
 
-// رصد صف كامل: تحميل الجدول الأفقي
+// رصد صف كامل: تحميل الجدول الأفقي (درجة فقط لكل مادة)
 async function loadGradeMarks(){
   let grade=document.getElementById("marks_grade").value;
   let section=document.getElementById("marks_section").value;
@@ -367,18 +407,18 @@ async function loadGradeMarks(){
     return;
   }
 
-  // ترتيب الطلاب بالاسم
   students.sort((a,b)=>(a.name||"").localeCompare(b.name||"","ar"));
 
-  // بناء رأس الجدول
+  // رأس الجدول
   let trHead=document.createElement("tr");
   trHead.innerHTML="<th>الكود</th><th>اسم الطالب</th>";
   subjects.forEach(sub=>{
-    trHead.innerHTML+="<th>"+sub.name+" (النهائية)</th><th>"+sub.name+" (درجة)</th>";
+    trHead.innerHTML+="<th>"+sub.name+" (درجة)</th>";
   });
+  trHead.innerHTML+="<th>إجراءات</th>";
   head.appendChild(trHead);
 
-  // بناء الصفوف
+  // الصفوف
   students.forEach(st=>{
     let tr=document.createElement("tr");
     let rowHtml="<td>"+(st.code||"")+"</td><td>"+(st.name||"")+"</td>";
@@ -386,10 +426,12 @@ async function loadGradeMarks(){
       let full=sub.fullMark||0;
       let existing=st.subjects && st.subjects[sub.name];
       let mark=existing ? (existing.mark||"") : "";
-      let safeSubject=sub.name.replace(/'/g,"&#39;");
-      rowHtml+="<td>"+full+"</td>";
-      rowHtml+="<td><input type='number' class='gm-mark' data-code='"+(st.code||"")+"' data-subject='"+safeSubject+"' data-full='"+full+"' style='width:70px' value='"+mark+"'></td>";
+      rowHtml+="<td><input type='number' class='gm-mark' data-code='"+(st.code||"")+"' data-subject='"+sub.name+"' data-full='"+full+"' style='width:70px' value='"+mark+"'></td>";
     });
+    rowHtml+="<td>"+
+      "<button class='small-btn btn-primary' onclick='moveStudent(\""+(st.code||"")+"\")'>نقل</button> "+
+      "<button class='small-btn btn-danger' onclick='deleteStudent(\""+(st.code||"")+"\")'>حذف</button>"+
+    "</td>";
     tr.innerHTML=rowHtml;
     body.appendChild(tr);
   });
@@ -438,17 +480,17 @@ async function saveGradeMarks(){
 function exportToExcel(){
   let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير العام"]];
   document.querySelectorAll("#students_body tr").forEach(tr=>{
-    if(tr.children.length===7){
-      rows.push([
-        tr.children[0].innerText,
-        tr.children[1].innerText,
-        tr.children[2].innerText,
-        tr.children[3].innerText,
-        tr.children[4].innerText,
-        tr.children[5].innerText,
-        tr.children[6].innerText
-      ]);
-    }
+    let tds=tr.children;
+    if(tds.length<7)return;
+    rows.push([
+      tds[0].innerText,
+      tds[1].innerText,
+      tds[2].innerText,
+      tds[3].innerText,
+      tds[4].innerText,
+      tds[5].innerText,
+      tds[6].innerText
+    ]);
   });
   let ws=XLSX.utils.aoa_to_sheet(rows);
   let wb=XLSX.utils.book_new();
@@ -482,7 +524,7 @@ async function importStudentsFromExcel(){
       let count=0;
 
       rows.forEach((r,index)=>{
-        if(index===0) return; // لو في هيدر
+        if(index===0)return;
         let code=(r[0]||"").toString().trim();
         let name=(r[1]||"").toString().trim();
         let grade=(r[2]||"").toString().trim();
