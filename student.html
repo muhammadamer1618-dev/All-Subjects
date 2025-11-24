@@ -68,11 +68,30 @@ tfoot td{
   background:transparent;
 }
 .info-table th{
-  color:#d32f2f; /* red titles */
+  color:#d32f2f; 
   font-weight:bold;
 }
 .info-table td{
-  color:#0d47a1; /* blue values */
+  color:#0d47a1; 
+  font-weight:bold;
+}
+.supervision-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:25px;
+}
+.supervision-table th, .supervision-table td{
+  border:1px solid #ccc;
+  padding:10px;
+  text-align:center;
+  background:transparent;
+}
+.supervision-table th{
+  color:#d32f2f; 
+  font-weight:bold;
+}
+.supervision-table td{
+  color:#0d47a1;
   font-weight:bold;
 }
 .center{text-align:center;}
@@ -161,6 +180,18 @@ button:hover{opacity:0.9;}
     </tfoot>
   </table>
 
+  <!-- Supervision and Principal names -->
+  <table class="supervision-table" id="supervision" style="display:none;">
+    <tr>
+      <th>رئيس قسم الإشراف التربوي</th>
+      <th>مدير المدرسة</th>
+    </tr>
+    <tr>
+      <td>أحمد سمير عباس</td>
+      <td>سعيد بن علي الجمعان</td>
+    </tr>
+  </table>
+
   <button class="print-btn" onclick="window.print()">🖨️ طباعة الشهادة</button>
 
   <div class="footer">تصميم محمد عامر أحمد</div>
@@ -203,6 +234,7 @@ async function loadStudent(){
     const s=doc.data();
     document.getElementById("infoTable").style.display="table";
     document.getElementById("marksTable").style.display="table";
+    document.getElementById("supervision").style.display="table";
 
     document.getElementById("code").innerText=s.code||code;
     document.getElementById("name").innerText=s.name||"";
