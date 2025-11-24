@@ -2,162 +2,161 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>شهادة الطالب - مدارس الفلاح الأهلية</title>
+<title>نتيجة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body {
-  font-family: Calibri;
-  background: #f4f4f4;
-  margin: 0;
-  padding: 20px;
-}
-.container {
-  max-width: 900px;
-  margin: auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
-}
-.header {
-  text-align: center;
-  color: #0d47a1;
-}
-.school-title {
-  font-size: 28px;
-  font-weight: bold;
-}
-.exam-title {
-  font-size: 20px;
-  margin-top: 5px;
-  color: #d32f2f;
-  font-weight: bold;
+body{font-family:Calibri;background:#f4f4f4;margin:0}
+.container{
+  max-width:900px;
+  margin:30px auto;
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 8px rgba(0,0,0,0.1);
 }
 
-label { display: block; margin-top: 10px; font-weight: bold; }
-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #999;
-  font-size: 18px;
+h1{
+  text-align:center;
+  color:#1976d2;
+  margin-bottom:5px;
 }
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 18px;
-  background: #1976d2;
-  color: #fff;
-  cursor: pointer;
-}
-button:hover { opacity: 0.9; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  font-size: 18px;
-}
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
-}
-th {
-  background: #1976d2;
-  color: #fff;
+h2{
+  text-align:center;
+  color:#444;
+  margin-top:0;
 }
 
-.name-table {
-  margin-top: 15px;
-  font-size: 18px;
-  width: 100%;
-  border: 2px solid #1976d2;
+label{display:block;margin-top:10px;font-weight:bold}
+input{
+  width:100%;
+  padding:8px;
+  border:1px solid #777;
+  border-radius:6px;
+  margin-top:5px;
+  font-size:16px;
 }
-.name-table td {
-  padding: 10px;
-  font-weight: bold;
-  color: #d32f2f;
-}
-
-.footer-sign {
-  margin-top: 40px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 18px;
-}
-.footer-sign div {
-  font-weight: bold;
-  color: #0d47a1;
-}
-
-.print-btn {
-  background: #388e3c;
-  margin-top: 25px;
+button{
+  margin-top:15px;
+  width:100%;
+  padding:10px;
+  background:#1976d2;
+  color:#fff;
+  border:none;
+  font-size:17px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
 }
 
-.designer {
-  text-align: center;
-  margin-top: 25px;
-  color: #0d47a1;
-  font-weight: bold;
-  font-size: 16px;
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  font-size:17px;
+}
+th,td{
+  border:1px solid #000;
+  padding:8px;
+  text-align:center;
+}
+th{
+  background:#1976d2;
+  color:#fff;
+}
+
+#footer{
+  text-align:center;
+  margin-top:20px;
+  color:#1976d2;
+  font-weight:bold;
+  font-size:15px;
+}
+
+/* الطباعة */
+@media print{
+  button,#search_box{
+    display:none;
+  }
+  body{
+    background:#fff;
+  }
+  .container{
+    box-shadow:none;
+    border:0;
+  }
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="container">
 
-  <div class="header">
-    <div class="school-title">مدارس الفلاح الأهلية</div>
-    <div id="exam_title" class="exam-title"></div>
+  <h1>مدارس الفلاح الأهلية</h1>
+  <h2 id="exam_title">نتيجة الطالب</h2>
+
+  <!-- البحث -->
+  <div id="search_box">
+    <label>أدخل كود الطالب</label>
+    <input id="code_input" placeholder="مثال: 1022">
+    <button onclick="loadResult()">عرض النتيجة</button>
   </div>
 
-  <label>أدخل كود الطالب</label>
-  <input id="student_code" placeholder="مثال: 1001">
+  <!-- بيانات الطالب -->
+  <div id="student_info" style="display:none; margin-top:15px;">
+    <table>
+      <tr><th>الاسم</th><td id="s_name" style="color:#d32f2f; font-weight:bold;"></td></tr>
+      <tr><th>الصف</th><td id="s_grade" style="color:#1976d2; font-weight:bold;"></td></tr>
+      <tr><th>الشعبة</th><td id="s_section" style="color:#1976d2; font-weight:bold;"></td></tr>
+      <tr><th>نوع الاختبار</th><td id="s_exam" style="color:#d32f2f; font-weight:bold;"></td></tr>
+    </table>
+  </div>
 
-  <button onclick="loadStudent()">عرض النتيجة</button>
-
-  <table class="name-table" id="info_table" style="display:none;">
-    <tr><td>اسم الطالب: <span id="st_name"></span></td></tr>
-    <tr><td>الصف: <span id="st_grade"></span> — الشعبة: <span id="st_section"></span></td></tr>
-  </table>
-
+  <!-- جدول الدرجات -->
   <table id="marks_table" style="display:none;">
     <thead>
       <tr>
         <th>المادة</th>
-        <th>الدرجة النهائية</th>
         <th>درجة الطالب</th>
-        <th>التقدير</th>
       </tr>
     </thead>
     <tbody id="marks_body"></tbody>
   </table>
 
-  <div class="footer-sign" id="sign_area" style="display:none;">
-    <div>رئيس قسم الإشراف التربوي<br>أحمد سمير عباس</div>
-    <div>مدير المدرسة<br>سعيد بن علي الجمعان</div>
+  <!-- جدول التوقيع -->
+  <div id="sign_table" style="display:none; margin-top:20px; display:flex; justify-content:center;">
+    <table style="border-collapse:collapse; width:70%; font-size:18px;">
+      <tr>
+        <th style="border:1px solid #000; padding:8px; background:#1976d2; color:#fff;">
+          رئيس قسم الإشراف التربوي
+        </th>
+        <td style="border:1px solid #000; padding:8px; font-weight:bold;">
+          أحمد سمير عباس
+        </td>
+      </tr>
+      <tr>
+        <th style="border:1px solid #000; padding:8px; background:#1976d2; color:#fff;">
+          مدير المدرسة
+        </th>
+        <td style="border:1px solid #000; padding:8px; font-weight:bold;">
+          سعيد بن علي الجمعان
+        </td>
+      </tr>
+    </table>
   </div>
 
-  <button class="print-btn" id="print_btn" style="display:none;" onclick="window.print()">طباعة الشهادة</button>
+  <button id="print_btn" style="display:none;" onclick="window.print()">طباعة النتيجة</button>
 
-  <div class="designer">تصميم محمد عامر أحمد</div>
+  <div id="footer">تصميم محمد عامر أحمد</div>
 
 </div>
 
 <script>
-// Firebase
-var firebaseConfig = {
+var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
   projectId:"all-subjects-14322",
@@ -166,79 +165,53 @@ var firebaseConfig = {
   appId:"1:813955287168:web:07efa7dde95b117b9bbe65"
 };
 firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+var db=firebase.firestore();
 
-function calcRating(m, f) {
-  m = Number(m); f = Number(f);
-  if (!m || !f) return "";
-  let p = (m/f) * 100;
-  if (p >= 90) return "ممتاز";
-  if (p >= 80) return "جيد جدًا";
-  if (p >= 70) return "جيد";
-  if (p >= 60) return "مقبول";
-  return "ضعيف";
-}
-
-async function loadStudent() {
-  let code = document.getElementById("student_code").value.trim();
-  if (!code) {
+async function loadResult(){
+  let code=document.getElementById("code_input").value.trim();
+  if(!code){
     alert("أدخل كود الطالب");
     return;
   }
 
-  let doc = await db.collection("students").doc(code).get();
-  if (!doc.exists) {
+  let doc=await db.collection("students").doc(code).get();
+
+  if(!doc.exists){
     alert("الطالب غير موجود");
     return;
   }
 
-  let st = doc.data();
+  let s=doc.data();
 
-  // جلب اسم الاختبار
-  let general = await db.collection("settings").doc("general").get();
-  if (general.exists) {
-    document.getElementById("exam_title").innerText = general.data().examType || "";
-  }
+  document.getElementById("student_info").style.display="block";
+  document.getElementById("marks_table").style.display="table";
+  document.getElementById("sign_table").style.display="flex";
+  document.getElementById("print_btn").style.display="block";
 
-  // عرض بيانات الطالب
-  document.getElementById("info_table").style.display = "table";
-  document.getElementById("st_name").innerText = st.name || "";
-  document.getElementById("st_grade").innerText = st.grade || "";
-  document.getElementById("st_section").innerText = st.section || "";
+  document.getElementById("s_name").innerText=s.name||"—";
+  document.getElementById("s_grade").innerText=s.grade||"—";
+  document.getElementById("s_section").innerText=s.section||"—";
+  document.getElementById("s_exam").innerText=s.examType||"—";
 
-  // جلب مواد الصف
-  let subDoc = await db.collection("settings").doc("subjects_" + st.grade).get();
-  if (!subDoc.exists) {
-    alert("لم يتم إعداد مواد لهذا الصف بعد");
+  document.getElementById("exam_title").innerText="نتيجة الطالب - "+(s.examType||"");
+
+  let tbody=document.getElementById("marks_body");
+  tbody.innerHTML="";
+
+  if(!s.subjects || Object.keys(s.subjects).length===0){
+    tbody.innerHTML="<tr><td colspan='2'>لم يتم رصد الدرجات حتى الآن</td></tr>";
     return;
   }
 
-  let template = subDoc.data().subjects || [];
+  Object.keys(s.subjects).forEach(sub=>{
+    let m=s.subjects[sub].mark||0;
 
-  // تجهيز جدول الدرجات
-  let body = document.getElementById("marks_body");
-  body.innerHTML = "";
-
-  let subs = st.subjects || {};
-
-  template.forEach(t => {
-    let subName = t.name;
-    let full = t.fullMark; // الدرجة النهائية الصحيحة من settings
-    let mark = subs[subName] ? subs[subName].mark : "";
-    let rating = calcRating(mark, full);
-
-    let tr = document.createElement("tr");
-    tr.innerHTML =
-      "<td>" + subName + "</td>" +
-      "<td>" + full + "</td>" +
-      "<td>" + mark + "</td>" +
-      "<td>" + rating + "</td>";
-    body.appendChild(tr);
+    tbody.innerHTML+=
+      "<tr>"+
+        "<td>"+sub+"</td>"+
+        "<td style='font-weight:bold;color:#d32f2f'>"+m+"</td>"+
+      "</tr>";
   });
-
-  document.getElementById("marks_table").style.display = "table";
-  document.getElementById("sign_area").style.display = "flex";
-  document.getElementById("print_btn").style.display = "block";
 }
 </script>
 
