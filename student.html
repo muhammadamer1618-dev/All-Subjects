@@ -63,6 +63,9 @@ th{background:#1976d2;color:white;font-size:17px}
       <tr>
         <th>المادة</th>
         <th>درجة الطالب</th>
+        <th>الدرجة النهائية</th>
+        <th>النسبة</th>
+        <th>التقدير</th>
       </tr>
     </thead>
     <tbody id="subjects_body"></tbody>
@@ -109,6 +112,14 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
+function getRate(p){
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
+}
+
 async function loadStudent(){
   let code=document.getElementById("code_input").value.trim();
   if(!code){alert("أدخل الكود");return;}
@@ -131,31 +142,33 @@ async function loadStudent(){
   let body=document.getElementById("subjects_body");
   body.innerHTML="";
 
-  let total=0, count=0;
+  let total=0, totalFull=0;
 
   Object.keys(subs).forEach(sub=>{
-    let tr=document.createElement("tr");
-    tr.innerHTML="<td>"+sub+"</td><td>"+subs[sub].mark+"</td>";
-    body.appendChild(tr);
+    let m=subs[sub].mark||0;
+    let f=subs[sub].fullMark||0;
+    let p=f?((m/f)*100).toFixed(0):0;
+    let r=getRate(p);
 
-    total+=Number(subs[sub].mark)||0;
-    count++;
+    total+=Number(m);
+    totalFull+=Number(f);
+
+    let tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+sub+"</td>"+
+      "<td>"+m+"</td>"+
+      "<td>"+f+"</td>"+
+      "<td>"+p+"%</td>"+
+      "<td>"+r+"</td>";
+    body.appendChild(tr);
   });
 
   document.getElementById("subjects_table").style.display="table";
 
-  let rating="—";
-  if(count>0){
-    let avg=(total/count);
-    if(avg>=90) rating="ممتاز";
-    else if(avg>=80) rating="جيد جدًا";
-    else if(avg>=70) rating="جيد";
-    else if(avg>=60) rating="مقبول";
-    else rating="ضعيف";
-  }
+  let finalRate = totalFull ? getRate((total/totalFull)*100) : "—";
 
-  document.getElementById("total_mark").innerText=total;
-  document.getElementById("final_rating").innerText=rating;
+  document.getElementById("total_mark").innerText = total +" / "+totalFull;
+  document.getElementById("final_rating").innerText = finalRate;
 
   document.getElementById("summary_table").style.display="table";
   document.getElementById("supervisor_table").style.display="table";
