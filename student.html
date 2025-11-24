@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <title>شهادة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
-
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   font-family: Calibri;
-  background: #eef2f7;
+  background:#eef2f7;
   margin:0;
   padding:0;
 }
@@ -21,15 +20,8 @@ body{
   text-align:center;
   padding:15px;
 }
-.header h1{
-  margin:0;
-  font-size:24px;
-}
-.header h2{
-  margin:5px 0 0;
-  font-size:18px;
-  color:#ffeb3b;
-}
+.header h1{margin:0;font-size:24px;}
+.header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b;}
 .container{
   max-width:900px;
   margin:25px auto;
@@ -37,18 +29,6 @@ body{
   border-radius:15px;
   box-shadow:0 0 12px rgba(0,0,0,0.15);
   padding:25px;
-}
-.info{
-  background:#e3f2fd;
-  border-radius:10px;
-  padding:15px;
-  margin-bottom:15px;
-}
-.info label{
-  font-weight:bold;
-  color:#0d47a1;
-  display:inline-block;
-  width:130px;
 }
 table{
   width:100%;
@@ -68,6 +48,27 @@ tfoot td{
   background:#f5f5f5;
   font-weight:bold;
 }
+.info-table{
+  width:100%;
+  margin-bottom:20px;
+  border-collapse:collapse;
+}
+.info-table th, .info-table td{
+  border:1px solid #1976d2;
+  padding:10px;
+  text-align:center;
+}
+.info-table th{
+  background:#d32f2f;
+  color:#fff;
+  width:30%;
+}
+.info-table td{
+  background:#e3f2fd;
+  color:#0d47a1;
+  font-weight:bold;
+}
+.center{text-align:center;}
 input,button{
   font-family: Calibri;
   font-size:16px;
@@ -75,9 +76,7 @@ input,button{
   border-radius:6px;
   border:1px solid #999;
 }
-input{
-  width:60%;
-}
+input{width:60%;}
 button{
   background:#1976d2;
   color:#fff;
@@ -85,18 +84,28 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{
-  opacity:0.9;
-}
-.center{
-  text-align:center;
-}
+button:hover{opacity:0.9;}
 .footer{
   text-align:left;
   font-size:13px;
   margin-top:25px;
   color:#1976d2;
   font-weight:bold;
+}
+.print-btn{
+  display:block;
+  margin:20px auto;
+  background:#388e3c;
+  color:#fff;
+  font-size:18px;
+  border:none;
+  border-radius:8px;
+  padding:10px 20px;
+  cursor:pointer;
+}
+@media print{
+  .header, .print-btn, input, button {display:none;}
+  .container{box-shadow:none;margin:0;}
 }
 </style>
 </head>
@@ -107,19 +116,19 @@ button:hover{
   <h2>شهادة درجات الطالب</h2>
 </div>
 
-<div class="container">
+<div class="container" id="certificate">
 
   <div class="center" style="margin-bottom:20px;">
     <input id="studentCode" placeholder="أدخل كود الطالب">
     <button onclick="loadStudent()">عرض النتيجة</button>
   </div>
 
-  <div id="studentInfo" class="info" style="display:none;">
-    <p><label>كود الطالب:</label><span id="code"></span></p>
-    <p><label>اسم الطالب:</label><span id="name"></span></p>
-    <p><label>الصف:</label><span id="grade"></span></p>
-    <p><label>الشعبة:</label><span id="section"></span></p>
-  </div>
+  <table id="infoTable" class="info-table" style="display:none;">
+    <tr><th>كود الطالب</th><td id="code"></td></tr>
+    <tr><th>اسم الطالب</th><td id="name"></td></tr>
+    <tr><th>الصف</th><td id="grade"></td></tr>
+    <tr><th>الشعبة</th><td id="section"></td></tr>
+  </table>
 
   <table id="marksTable" style="display:none;">
     <thead>
@@ -144,13 +153,10 @@ button:hover{
     </tfoot>
   </table>
 
-  <div id="noData" class="center" style="display:none;color:#d32f2f;margin-top:20px;">
-    لا توجد بيانات للطالب المدخل.
-  </div>
+  <button class="print-btn" onclick="window.print()">🖨️ طباعة الشهادة</button>
 
-  <div class="footer">
-    تصميم محمد عامر أحمد
-  </div>
+  <div class="footer">تصميم محمد عامر أحمد</div>
+
 </div>
 
 <script>
@@ -165,56 +171,49 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
-function calcRating(m, f){
-  m = Number(m); f = Number(f);
-  if(!m || !f) return "—";
-  let p = (m/f)*100;
-  if(p >= 90) return "ممتاز";
-  if(p >= 80) return "جيد جدًا";
-  if(p >= 70) return "جيد";
-  if(p >= 60) return "مقبول";
-  return "ضعيف";
+function calcRating(m,f){
+  m=Number(m);f=Number(f);
+  if(!m||!f)return"—";
+  let p=(m/f)*100;
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
 }
 
 async function loadStudent(){
-  const code = document.getElementById("studentCode").value.trim();
-  if(!code){ alert("أدخل كود الطالب"); return; }
-
+  const code=document.getElementById("studentCode").value.trim();
+  if(!code){alert("أدخل كود الطالب");return;}
   try{
-    const doc = await db.collection("students").doc(code).get();
+    const doc=await db.collection("students").doc(code).get();
     if(!doc.exists){
-      document.getElementById("studentInfo").style.display = "none";
-      document.getElementById("marksTable").style.display = "none";
-      document.getElementById("noData").style.display = "block";
+      alert("لا توجد بيانات لهذا الطالب");
       return;
     }
 
-    const s = doc.data();
-    document.getElementById("studentInfo").style.display = "block";
-    document.getElementById("marksTable").style.display = "table";
-    document.getElementById("noData").style.display = "none";
+    const s=doc.data();
+    document.getElementById("infoTable").style.display="table";
+    document.getElementById("marksTable").style.display="table";
 
-    document.getElementById("code").innerText = s.code || code;
-    document.getElementById("name").innerText = s.name || "";
-    document.getElementById("grade").innerText = s.grade || "";
-    document.getElementById("section").innerText = s.section || "";
+    document.getElementById("code").innerText=s.code||code;
+    document.getElementById("name").innerText=s.name||"";
+    document.getElementById("grade").innerText=s.grade||"";
+    document.getElementById("section").innerText=s.section||"";
 
-    const tbody = document.getElementById("marksBody");
-    tbody.innerHTML = "";
+    const tbody=document.getElementById("marksBody");
+    tbody.innerHTML="";
 
-    let total = 0;
-    let full = 0;
+    let total=0,full=0;
 
     if(s.subjects){
       Object.keys(s.subjects).forEach(sub=>{
-        const d = s.subjects[sub];
-        const m = Number(d.mark)||0;
-        const f = Number(d.fullMark)||0;
-        total += m;
-        full += f;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+        const d=s.subjects[sub];
+        const m=Number(d.mark)||0;
+        const f=Number(d.fullMark)||0;
+        total+=m;full+=f;
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
           <td>${sub}</td>
           <td>${d.exam||""}</td>
           <td>${f}</td>
@@ -226,13 +225,12 @@ async function loadStudent(){
         tbody.appendChild(tr);
       });
     }
-
-    document.getElementById("fullTotal").innerText = full;
-    document.getElementById("totalMarks").innerText = total;
-    document.getElementById("overallRating").innerText = full>0 ? calcRating(total, full) : "—";
+    document.getElementById("fullTotal").innerText=full;
+    document.getElementById("totalMarks").innerText=total;
+    document.getElementById("overallRating").innerText=full>0?calcRating(total,full):"—";
 
   }catch(e){
-    alert("خطأ أثناء تحميل البيانات");
+    alert("حدث خطأ أثناء تحميل البيانات");
     console.log(e);
   }
 }
