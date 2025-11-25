@@ -212,15 +212,26 @@ async function saveSubjectsForSelectedGrade(){
   let g=document.getElementById("grade_select").value;
   let rows=document.querySelectorAll("#subjects_body tr");
   let subs=[];
+
   rows.forEach(tr=>{
     let name=tr.querySelector(".sub-name").value.trim();
-    let full=Number(tr.querySelector(".sub-full").value.trim());
-    if(name && !isNaN(full))
+    let fullVal=tr.querySelector(".sub-full").value.trim();
+
+    let full=parseInt(fullVal);
+    if(isNaN(full)) full=0;
+
+    if(name){
       subs.push({name:name,fullMark:full});
+    }
   });
 
-  await db.collection("settings").doc("subjects_"+g).set({subjects:subs});
-  alert("تم الحفظ");
+  try{
+    await db.collection("settings").doc("subjects_"+g).set({subjects:subs});
+    alert("تم الحفظ بنجاح");
+  }catch(err){
+    console.log(err);
+    alert("حدث خطأ في الحفظ");
+  }
 }
 
 async function copySubjectsBetweenGrades(){
