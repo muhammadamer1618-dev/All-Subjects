@@ -129,10 +129,8 @@ async function loadStudent(){
 
   let d=doc.data();
 
-  // نوع الاختبار
   document.getElementById("exam_type").innerText=d.examType||"—";
 
-  // بيانات الطالب
   document.getElementById("st_name").innerText=d.name||"";
   document.getElementById("st_code").innerText=d.code||"";
   document.getElementById("st_grade").innerText=d.grade||"";
@@ -155,7 +153,6 @@ async function loadStudent(){
   let hasRows=false;
 
   Object.keys(subs).forEach(subName=>{
-    // لو فيه قالب مواد: لا نعرض إلا المواد الموجودة في القالب الحالي
     if(allowedSubjects.length && !allowedSubjects.includes(subName)) return;
 
     let m=subs[subName].mark||0;
@@ -177,7 +174,6 @@ async function loadStudent(){
     body.appendChild(tr);
   });
 
-  // إظهار/إخفاء جدول المواد حسب وجود صفوف
   document.getElementById("subjects_table").style.display=hasRows?"table":"none";
 
   let finalRate = totalFull ? getRate((total/totalFull)*100) : "—";
