@@ -149,6 +149,15 @@ tr:nth-child(even){background:#f9f9f9}
     <button id="save_grade_marks_btn" class="btn-primary" style="margin-top:10px;display:none;" onclick="saveGradeMarks()">
       حفظ درجات الصف بالكامل
     </button>
+
+    <!-- الأزرار الجديدة لتفريغ الدرجات -->
+    <button id="clear_one_subject_btn" class="btn-danger" style="margin-top:10px;display:none;" onclick="clearOneSubjectForCurrentGrade()">
+      تفريغ مادة واحدة لهذا الصف
+    </button>
+
+    <button id="clear_all_subjects_btn" class="btn-danger" style="margin-top:10px;display:none;" onclick="clearAllSubjectsForCurrentGrade()">
+      تفريغ جميع المواد لهذا الصف
+    </button>
   </div>
 
   <div class="box">
@@ -182,6 +191,10 @@ var studentsCache=[];
 var studentsByCode={};
 var subjectsCacheByGrade={};
 
+var currentGradeForMarks="";
+var currentSectionForMarks="";
+var currentSubjectsForMarks=[];
+
 const gradeOrder={
   "1 ابتدائي":1,"2 ابتدائي":2,"3 ابتدائي":3,
   "4 ابتدائي":4,"5 ابتدائي":5,"6 ابتدائي":6,
@@ -200,7 +213,6 @@ function calcRating(m,f){
   return"ضعيف";
 }
 
-// نوع الاختبار
 async function loadSettings(){
   try{
     let set=await db.collection("settings").doc("general").get();
@@ -214,7 +226,6 @@ async function loadSettings(){
   }catch(e){console.log(e);}
 }
 
-// تهيئة القوائم الخاصة بالصفوف
 function initGrades(){
   var g1=document.getElementById("new_grade");
   var g2=document.getElementById("marks_grade");
@@ -225,7 +236,6 @@ function initGrades(){
   });
 }
 
-// إضافة طالب جديد
 async function addNewStudent(){
   let code=document.getElementById("new_code").value.trim();
   let name=document.getElementById("new_name").value.trim();
@@ -246,7 +256,6 @@ async function addNewStudent(){
   loadStudents();
 }
 
-// حذف جميع الطلاب
 async function deleteAllStudents(){
   if(!confirm("هل تريد حذف جميع الطلاب؟"))return;
   let snap=await db.collection("students").get();
@@ -257,7 +266,6 @@ async function deleteAllStudents(){
   loadStudents();
 }
 
-// حذف طالب واحد
 async function deleteStudent(code){
   if(!code)return;
   if(!confirm("هل تريد حذف هذا الطالب؟"))return;
@@ -266,7 +274,6 @@ async function deleteStudent(code){
   loadStudents();
 }
 
-// نقل طالب (مع/بدون درجات)
 async function moveStudent(code){
   if(!code)return;
   let doc=await db.collection("students").doc(code).get();
@@ -292,7 +299,6 @@ async function moveStudent(code){
   loadStudents();
 }
 
-// تحميل الطلاب (ملخص)
 async function loadStudents(){
   let fname=document.getElementById("filter_name").value.trim();
   let fcode=document.getElementById("filter_code").value.trim();
@@ -357,7 +363,6 @@ async function loadStudents(){
   });
 }
 
-// كاش لمواد الصف
 async function getSubjectsTemplateForGrade(grade){
   if(subjectsCacheByGrade[grade])return subjectsCacheByGrade[grade];
   let doc=await db.collection("settings").doc("subjects_"+grade).get();
@@ -368,7 +373,6 @@ async function getSubjectsTemplateForGrade(grade){
   return [];
 }
 
-// رصد صف كامل: تحميل الجدول الأفقي (درجة فقط لكل مادة)
 async function loadGradeMarks(){
   let grade=document.getElementById("marks_grade").value;
   let section=document.getElementById("marks_section").value;
@@ -377,11 +381,19 @@ async function loadGradeMarks(){
   let head=document.getElementById("grade_marks_head");
   let body=document.getElementById("grade_marks_body");
   let btn=document.getElementById("save_grade_marks_btn");
+  let btnOne=document.getElementById("clear_one_subject_btn");
+  let btnAll=document.getElementById("clear_all_subjects_btn");
 
   head.innerHTML="";
   body.innerHTML="";
   table.style.display="none";
   btn.style.display="none";
+  btnOne.style.display="none";
+  btnAll.style.display="none";
+
+  currentGradeForMarks="";
+  currentSectionForMarks="";
+  currentSubjectsForMarks=[];
 
   if(!grade){
     alert("اختر الصف أولاً");
@@ -409,7 +421,6 @@ async function loadGradeMarks(){
 
   students.sort((a,b)=>(a.name||"").localeCompare(b.name||"","ar"));
 
-  // رأس الجدول
   let trHead=document.createElement("tr");
   trHead.innerHTML="<th>الكود</th><th>اسم الطالب</th>";
   subjects.forEach(sub=>{
@@ -418,7 +429,6 @@ async function loadGradeMarks(){
   trHead.innerHTML+="<th>إجراءات</th>";
   head.appendChild(trHead);
 
-  // الصفوف
   students.forEach(st=>{
     let tr=document.createElement("tr");
     let rowHtml="<td>"+(st.code||"")+"</td><td>"+(st.name||"")+"</td>";
@@ -438,9 +448,14 @@ async function loadGradeMarks(){
 
   table.style.display="table";
   btn.style.display="inline-block";
+  btnOne.style.display="inline-block";
+  btnAll.style.display="inline-block";
+
+  currentGradeForMarks=grade;
+  currentSectionForMarks=section;
+  currentSubjectsForMarks=subjects.map(s=>s.name);
 }
 
-// حفظ درجات الصف بالكامل من الجدول الأفقي
 async function saveGradeMarks(){
   let inputs=document.querySelectorAll(".gm-mark");
   if(!inputs.length){
@@ -476,7 +491,88 @@ async function saveGradeMarks(){
   loadStudents();
 }
 
-// تصدير ملخص الطلاب إلى Excel
+async function clearOneSubjectForCurrentGrade(){
+  if(!currentGradeForMarks || !currentSubjectsForMarks.length){
+    alert("اعرض الصف أولاً من زر عرض طلاب الصف للرصد");
+    return;
+  }
+
+  let msg="أدخل اسم المادة كما هو مكتوب في الجدول:\n"+currentSubjectsForMarks.join(" - ");
+  let subjectName=prompt(msg);
+  if(!subjectName)return;
+
+  if(!currentSubjectsForMarks.includes(subjectName)){
+    alert("اسم المادة غير صحيح");
+    return;
+  }
+
+  let confirmMsg="سيتم تفريغ درجات مادة ("+subjectName+") لجميع طلاب الصف "+currentGradeForMarks+
+    (currentSectionForMarks? " والشعبة "+currentSectionForMarks:"")+
+    ".\nهل أنت متأكد؟";
+  if(!confirm(confirmMsg))return;
+
+  let snap=await db.collection("students").where("grade","==",currentGradeForMarks).get();
+  let batch=db.batch();
+  let count=0;
+
+  snap.forEach(doc=>{
+    let s=doc.data();
+    if(currentSectionForMarks && s.section!==currentSectionForMarks)return;
+    if(!s.subjects || !s.subjects[subjectName])return;
+
+    let subjectsObj=Object.assign({}, s.subjects);
+    let full=Number(subjectsObj[subjectName].fullMark)||0;
+    subjectsObj[subjectName]={fullMark:full,mark:0,rating:calcRating(0,full)};
+    batch.set(doc.ref,{subjects:subjectsObj},{merge:true});
+    count++;
+  });
+
+  if(count===0){
+    alert("لا توجد درجات مسجلة لهذه المادة في هذا الصف/الشعبة");
+    return;
+  }
+
+  await batch.commit();
+  alert("تم تفريغ درجات مادة "+subjectName+" لعدد "+count+" طالب");
+
+  await loadGradeMarks();
+  await loadStudents();
+}
+
+async function clearAllSubjectsForCurrentGrade(){
+  if(!currentGradeForMarks){
+    alert("اعرض الصف أولاً من زر عرض طلاب الصف للرصد");
+    return;
+  }
+
+  let confirmMsg="سيتم مسح درجات جميع المواد لجميع طلاب الصف "+currentGradeForMarks+
+    (currentSectionForMarks? " والشعبة "+currentSectionForMarks:"")+
+    ".\nهل أنت متأكد؟";
+  if(!confirm(confirmMsg))return;
+
+  let snap=await db.collection("students").where("grade","==",currentGradeForMarks).get();
+  let batch=db.batch();
+  let count=0;
+
+  snap.forEach(doc=>{
+    let s=doc.data();
+    if(currentSectionForMarks && s.section!==currentSectionForMarks)return;
+    batch.set(doc.ref,{subjects:{}},{merge:true});
+    count++;
+  });
+
+  if(count===0){
+    alert("لا يوجد طلاب في هذا الصف/الشعبة");
+    return;
+  }
+
+  await batch.commit();
+  alert("تم مسح درجات جميع المواد لعدد "+count+" طالب");
+
+  await loadGradeMarks();
+  await loadStudents();
+}
+
 function exportToExcel(){
   let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير العام"]];
   document.querySelectorAll("#students_body tr").forEach(tr=>{
@@ -498,7 +594,6 @@ function exportToExcel(){
   XLSX.writeFile(wb,"students.xlsx");
 }
 
-// استيراد الطلاب من Excel
 async function importStudentsFromExcel(){
   let input=document.getElementById("students_file");
   let file=input.files[0];
@@ -560,7 +655,6 @@ async function importStudentsFromExcel(){
   reader.readAsArrayBuffer(file);
 }
 
-// تشغيل مبدئي
 initGrades();
 loadSettings();
 loadStudents();
