@@ -5,7 +5,6 @@
 <title>نتيجة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- Firebase FIXED -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
@@ -102,7 +101,6 @@ th{background:#1976d2;color:white;font-size:17px}
 </div>
 
 <script>
-// Firebase INIT
 var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
@@ -131,33 +129,47 @@ async function loadStudent(){
 
   let d=doc.data();
 
+  // نوع الاختبار
   document.getElementById("exam_type").innerText=d.examType||"—";
 
+  // بيانات الطالب
   document.getElementById("st_name").innerText=d.name||"";
   document.getElementById("st_code").innerText=d.code||"";
   document.getElementById("st_grade").innerText=d.grade||"";
   document.getElementById("st_section").innerText=d.section||"";
-
   document.getElementById("student_info").style.display="table";
 
-  let subs=d.subjects||{};
+  // جلب قالب مواد الصف من الإعدادات
+  let grade=d.grade||"";
+  let templateDoc=await db.collection("settings").doc("subjects_"+grade).get();
+  let allowedSubjects=[];
+  if(templateDoc.exists){
+    let subsTemplate=templateDoc.data().subjects||[];
+    allowedSubjects=subsTemplate.map(s=>s.name);
+  }
+
   let body=document.getElementById("subjects_body");
   body.innerHTML="";
+  let subs=d.subjects||{};
+  let total=0,totalFull=0;
+  let hasRows=false;
 
-  let total=0, totalFull=0;
+  Object.keys(subs).forEach(subName=>{
+    // لو فيه قالب مواد: لا نعرض إلا المواد الموجودة في القالب الحالي
+    if(allowedSubjects.length && !allowedSubjects.includes(subName)) return;
 
-  Object.keys(subs).forEach(sub=>{
-    let m=subs[sub].mark||0;
-    let f=subs[sub].fullMark||0;
+    let m=subs[subName].mark||0;
+    let f=subs[subName].fullMark||0;
     let p=f?((m/f)*100).toFixed(0):0;
     let r=getRate(p);
 
     total+=Number(m);
     totalFull+=Number(f);
+    hasRows=true;
 
     let tr=document.createElement("tr");
     tr.innerHTML=
-      "<td>"+sub+"</td>"+
+      "<td>"+subName+"</td>"+
       "<td>"+m+"</td>"+
       "<td>"+f+"</td>"+
       "<td>"+p+"%</td>"+
@@ -165,14 +177,16 @@ async function loadStudent(){
     body.appendChild(tr);
   });
 
-  document.getElementById("subjects_table").style.display="table";
+  // إظهار/إخفاء جدول المواد حسب وجود صفوف
+  document.getElementById("subjects_table").style.display=hasRows?"table":"none";
 
   let finalRate = totalFull ? getRate((total/totalFull)*100) : "—";
+  let totalText = totalFull ? (total+" / "+totalFull) : "0 / 0";
 
-  document.getElementById("total_mark").innerText = total +" / "+totalFull;
+  document.getElementById("total_mark").innerText = totalText;
   document.getElementById("final_rating").innerText = finalRate;
-
   document.getElementById("summary_table").style.display="table";
+
   document.getElementById("supervisor_table").style.display="table";
   document.getElementById("manager_table").style.display="table";
 }
