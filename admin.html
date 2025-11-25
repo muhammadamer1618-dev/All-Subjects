@@ -390,7 +390,13 @@ async function saveGradeMarks(){
 
     if(!updated[code])updated[code]={};
 
-    updated[code][subject]={mark:mark};
+    let full = subs.find(x => x.name === subject)?.fullMark || 0;
+
+updated[code][subject] = {
+    mark: mark,
+    fullMark: full
+};
+
   });
 
   Object.keys(updated).forEach(code=>{
