@@ -2,76 +2,93 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>شهادة الطالب - مدارس الفلاح الأهلية</title>
+<title>نتيجة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Calibri;background:#f4f4f4;margin:0;padding:0}
-.header{text-align:center;padding:20px;background:#1976d2;color:#fff}
-.container{max-width:1000px;margin:20px auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,0.15)}
-
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{border:1px solid #ccc;padding:8px;text-align:center;font-size:16px}
-th{background:#1976d2;color:#fff;font-size:17px}
-.section-title{background:#0d47a1;color:#fff;padding:8px;border-radius:6px;text-align:center;margin-top:25px;font-size:18px;font-weight:bold}
-
-.footer-table td{background:#e3f2fd;font-weight:bold}
+body{font-family:Calibri;background:#f4f4f4;margin:0;padding:0;text-align:center}
+.container{max-width:900px;margin:20px auto;padding:15px;background:#fff;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.1)}
+h1{color:#1976d2;margin-bottom:5px}
+h2{color:#b71c1c;margin-top:0}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:16px}
+th,td{border:1px solid #999;padding:8px;text-align:center}
+th{background:#1976d2;color:#fff}
+.section-title{background:#0d47a1;color:#fff;font-weight:bold;padding:8px;margin-top:25px}
+.footer-table td{padding:25px;font-size:18px}
+.btn{padding:10px 20px;background:#1976d2;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-top:15px;font-size:16px}
+.btn:hover{opacity:0.9}
+#designer{color:#0d47a1;margin-top:20px;font-size:14px}
 </style>
 </head>
-<body>
 
-<div class="header">
-  <h1 id="exam_title">نتيجة الطالب</h1>
-</div>
+<body>
 
 <div class="container">
 
-  <!-- بيانات الطالب -->
+  <h1>مدارس الفلاح الأهلية</h1>
+  <h2 id="exam_title">نتيجة الاختبار</h2>
+
   <div class="section-title">بيانات الطالب</div>
+
   <table>
-    <tbody>
-      <tr><th>الكود</th><td id="st_code"></td></tr>
-      <tr><th>الاسم</th><td id="st_name"></td></tr>
-      <tr><th>الصف</th><td id="st_grade"></td></tr>
-      <tr><th>الشعبة</th><td id="st_section"></td></tr>
-    </tbody>
+    <tr><th>البيان</th><th>القيمة</th></tr>
+    <tr><td>اسم الطالب</td><td id="s_name"></td></tr>
+    <tr><td>الكود</td><td id="s_code"></td></tr>
+    <tr><td>الصف</td><td id="s_grade"></td></tr>
+    <tr><td>الشعبة</td><td id="s_section"></td></tr>
   </table>
 
-  <!-- جدول المواد -->
-  <div class="section-title">النتيجة التفصيلية</div>
-  <table id="subjects_table">
+  <div class="section-title">درجات المواد</div>
+
+  <table id="marks_table">
     <thead>
       <tr>
         <th>المادة</th>
         <th>درجة الطالب</th>
         <th>الدرجة النهائية</th>
+        <th>النسبة</th>
         <th>التقدير</th>
       </tr>
     </thead>
-    <tbody id="subs_body"></tbody>
+    <tbody id="marks_body"></tbody>
   </table>
 
-  <!-- المجموع النهائي -->
-  <div class="section-title">المجموع النهائي</div>
+  <div class="section-title">المجموع الكلي</div>
+
   <table>
-    <tbody>
-      <tr><th>مجموع درجات الطالب</th><td id="total_marks"></td></tr>
-      <tr><th>الدرجة الكلية</th><td id="full_marks"></td></tr>
-      <tr><th>التقدير العام</th><td id="final_rating"></td></tr>
-    </tbody>
+    <tr>
+      <th>المجموع</th>
+      <td id="total_display"></td>
+    </tr>
+    <tr>
+      <th>التقدير العام</th>
+      <td id="final_rating"></td>
+    </tr>
   </table>
 
-  <!-- التوقيعات -->
   <div class="section-title">التوقيعات</div>
+
   <table class="footer-table">
-    <tbody>
-      <tr><th>رئيس قسم الإشراف والتدريب</th><td>أحمد سمير عباس</td></tr>
-      <tr><th>مدير المدرسة</th><td>سعيد بن علي الجمعان</td></tr>
-    </tbody>
+    <tr>
+      <td>
+        <strong>رئيس الإشراف التربوي</strong><br>
+        أحمد سمير عباس
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <strong>مدير المدرسة</strong><br>
+        سعيد بن علي الجمعان
+      </td>
+    </tr>
   </table>
+
+  <button class="btn" onclick="window.print()">طباعة النتيجة</button>
+
+  <div id="designer">تصميم محمد عامر أحمد</div>
 
 </div>
 
@@ -87,60 +104,61 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
-function calcRating(mark,full){
-  if(full===0)return "";
-  let p=(mark/full)*100;
-  if(p>=90) return "ممتاز";
-  if(p>=80) return "جيد جدًا";
-  if(p>=70) return "جيد";
-  if(p>=60) return "مقبول";
-  return "ضعيف";
+function calcRating(p){
+  if(p>=90)return"ممتاز";
+  if(p>=80)return"جيد جدًا";
+  if(p>=70)return"جيد";
+  if(p>=60)return"مقبول";
+  return"ضعيف";
 }
 
-async function loadStudent(){
-  let code=prompt("أدخل كود الطالب:");
+async function loadResult(){
+  var code=prompt("أدخل كود الطالب:");
   if(!code)return;
 
-  let doc=await db.collection("students").doc(code).get();
-  if(!doc.exists){
-    alert("الكود غير موجود");
+  var snap=await db.collection("students").doc(code).get();
+  if(!snap.exists){
+    alert("الطالب غير موجود");
     return;
   }
 
-  let s=doc.data();
-  document.getElementById("st_code").innerText=s.code;
-  document.getElementById("st_name").innerText=s.name;
-  document.getElementById("st_grade").innerText=s.grade;
-  document.getElementById("st_section").innerText=s.section;
-  document.getElementById("exam_title").innerText=s.examType || "نتيجة الطالب";
+  var s=snap.data();
+  document.getElementById("s_name").innerText=s.name||"—";
+  document.getElementById("s_code").innerText=s.code||"—";
+  document.getElementById("s_grade").innerText=s.grade||"—";
+  document.getElementById("s_section").innerText=s.section||"—";
+  document.getElementById("exam_title").innerText=s.examType||"نتيجة الاختبار";
 
-  let subs=s.subjects||{};
-  let body=document.getElementById("subs_body");
+  var body=document.getElementById("marks_body");
   body.innerHTML="";
 
-  let total=0, full=0;
+  var total=0, fullTotal=0;
 
-  Object.keys(subs).forEach(sub=>{
-    let m=subs[sub].mark||0;
-    let f=subs[sub].fullMark||0;
+  Object.keys(s.subjects||{}).forEach(sub=>{
+    var m=s.subjects[sub].mark||0;
+    var f=s.subjects[sub].fullMark||0;
+    var percent=f?Math.round((m/f)*100):0;
+    var rate=calcRating(percent);
+
     total+=m;
-    full+=f;
+    fullTotal+=f;
 
-    let tr=document.createElement("tr");
+    var tr=document.createElement("tr");
     tr.innerHTML=
       "<td>"+sub+"</td>"+
       "<td>"+m+"</td>"+
       "<td>"+f+"</td>"+
-      "<td>"+calcRating(m,f)+"</td>";
+      "<td>"+percent+"%</td>"+
+      "<td>"+rate+"</td>";
     body.appendChild(tr);
   });
 
-  document.getElementById("total_marks").innerText=total;
-  document.getElementById("full_marks").innerText=full;
-  document.getElementById("final_rating").innerText=calcRating(total,full);
+  var finalPercent=fullTotal?Math.round((total/fullTotal)*100):0;
+  document.getElementById("total_display").innerText=total+" / "+fullTotal;
+  document.getElementById("final_rating").innerText=calcRating(finalPercent);
 }
 
-loadStudent();
+loadResult();
 </script>
 
 </body>
