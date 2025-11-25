@@ -5,8 +5,9 @@
 <title>نتيجة الطالب - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
+<!-- Firebase FIXED -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-Compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{font-family:Calibri;background:#f4f4f4;margin:0;padding:20px}
@@ -25,6 +26,7 @@ th{background:#1976d2;color:white;font-size:17px}
 .blue{color:#0d47a1;font-weight:bold}
 .red{color:#d32f2f;font-weight:bold}
 
+.footer-sign{margin-top:20px}
 .designer{text-align:center;margin-top:25px;font-size:15px;color:#555}
 
 @media print{
@@ -34,7 +36,6 @@ th{background:#1976d2;color:white;font-size:17px}
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -71,7 +72,7 @@ th{background:#1976d2;color:white;font-size:17px}
     <tbody id="subjects_body"></tbody>
   </table>
 
-  <!-- الملخص -->
+  <!-- جدول التقدير العام -->
   <table id="summary_table" style="display:none;">
     <tr><th>المجموع الكلي</th><th>التقدير العام</th></tr>
     <tr>
@@ -80,12 +81,13 @@ th{background:#1976d2;color:white;font-size:17px}
     </tr>
   </table>
 
-  <!-- الإدارة -->
+  <!-- توقيع رئيس الإشراف -->
   <table id="supervisor_table" style="display:none;margin-top:20px;">
     <tr><th>رئيس الإشراف التربوي</th></tr>
     <tr><td class="blue">أحمد سمير عباس</td></tr>
   </table>
 
+  <!-- توقيع المدير -->
   <table id="manager_table" style="display:none;margin-top:20px;">
     <tr><th>مدير المدرسة</th></tr>
     <tr><td class="blue">سعيد بن علي الجمعان</td></tr>
@@ -100,6 +102,7 @@ th{background:#1976d2;color:white;font-size:17px}
 </div>
 
 <script>
+// Firebase INIT
 var firebaseConfig={
   apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
   authDomain:"all-subjects-14322.firebaseapp.com",
@@ -128,58 +131,45 @@ async function loadStudent(){
 
   let d=doc.data();
 
-  // بيانات عامة
   document.getElementById("exam_type").innerText=d.examType||"—";
-  document.getElementById("st_name").innerText=d.name;
-  document.getElementById("st_code").innerText=d.code;
-  document.getElementById("st_grade").innerText=d.grade;
-  document.getElementById("st_section").innerText=d.section;
+
+  document.getElementById("st_name").innerText=d.name||"";
+  document.getElementById("st_code").innerText=d.code||"";
+  document.getElementById("st_grade").innerText=d.grade||"";
+  document.getElementById("st_section").innerText=d.section||"";
 
   document.getElementById("student_info").style.display="table";
 
-  // ********** تحميل مواد الصف من صفحة الإعدادات **********
-  let subDoc = await db.collection("settings").doc("subjects_"+d.grade).get();
-
-  let gradeSubjects = [];
-  if(subDoc.exists){
-    gradeSubjects = subDoc.data().subjects || [];
-  }
-
-  let studentSubs = d.subjects || {};
+  let subs=d.subjects||{};
   let body=document.getElementById("subjects_body");
   body.innerHTML="";
 
-  let total=0;
-  let totalFull=0;
+  let total=0, totalFull=0;
 
-  // ********** عرض فقط المواد الموجودة في الإعدادات **********
-  gradeSubjects.forEach(s=>{
-    let name=s.name;
-    let full=s.fullMark;
-    let mark = studentSubs[name] ? studentSubs[name].mark : 0;
+  Object.keys(subs).forEach(sub=>{
+    let m=subs[sub].mark||0;
+    let f=subs[sub].fullMark||0;
+    let p=f?((m/f)*100).toFixed(0):0;
+    let r=getRate(p);
 
-    let percent = full ? ((mark/full)*100).toFixed(0) : 0;
-    let rating = getRate(percent);
-
-    total += Number(mark);
-    totalFull += Number(full);
+    total+=Number(m);
+    totalFull+=Number(f);
 
     let tr=document.createElement("tr");
-    tr.innerHTML =
-      "<td>"+name+"</td>"+
-      "<td>"+mark+"</td>"+
-      "<td>"+full+"</td>"+
-      "<td>"+percent+"%</td>"+
-      "<td>"+rating+"</td>";
+    tr.innerHTML=
+      "<td>"+sub+"</td>"+
+      "<td>"+m+"</td>"+
+      "<td>"+f+"</td>"+
+      "<td>"+p+"%</td>"+
+      "<td>"+r+"</td>";
     body.appendChild(tr);
   });
 
   document.getElementById("subjects_table").style.display="table";
 
-  // ********** الحساب النهائي **********
   let finalRate = totalFull ? getRate((total/totalFull)*100) : "—";
 
-  document.getElementById("total_mark").innerText = total+" / "+totalFull;
+  document.getElementById("total_mark").innerText = total +" / "+totalFull;
   document.getElementById("final_rating").innerText = finalRate;
 
   document.getElementById("summary_table").style.display="table";
