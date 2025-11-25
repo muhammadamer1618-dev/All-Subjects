@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<title>إعداد المواد ونوع الاختبار - مدارس الفلاح الأهلية</title>
+<title>Subjects & Exam Setup - Al Falah Schools</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -44,23 +44,23 @@ tr:nth-child(even){background:#f9f9f9}
 <body>
 
 <div class="header">
-  <h1>مدارس الفلاح الأهلية</h1>
-  <h2>إعداد المواد ونوع الاختبار لجميع الصفوف</h2>
+  <h1>Al Falah Private Schools</h1>
+  <h2>Subjects & Exam Type Setup</h2>
 </div>
 
 <div class="container">
 
   <!-- Exam Type -->
   <div class="box">
-    <h3>نوع الاختبار العام</h3>
+    <h3>Exam Type</h3>
     <div class="row">
       <div class="col-6">
-        <label>نوع الاختبار</label>
-        <input id="exam_type_input" placeholder="اختبار الفترة الأولى">
+        <label>Exam Name</label>
+        <input id="exam_type_input" placeholder="Example: First Term Exam">
       </div>
 
       <div class="col-3" style="display:flex;align-items:flex-end">
-        <button class="btn-primary" style="width:100%" onclick="saveExamType()">حفظ النوع</button>
+        <button class="btn-primary" style="width:100%" onclick="saveExamType()">Save</button>
       </div>
 
       <div class="col-3" style="display:flex;align-items:flex-end">
@@ -71,61 +71,67 @@ tr:nth-child(even){background:#f9f9f9}
 
   <!-- Subjects Setup -->
   <div class="box">
-    <h3>إعداد مواد صف واحد</h3>
+    <h3>Subjects for One Grade</h3>
 
     <div class="row">
-      <div class="col-3"><label>اختر الصف</label><select id="grade_select"></select></div>
-
-      <div class="col-3" style="display:flex;align-items:flex-end">
-        <button class="btn-secondary" style="width:100%" onclick="loadSubjectsForSelectedGrade()">تحميل المواد</button>
+      <div class="col-3">
+        <label>Select Grade</label>
+        <select id="grade_select"></select>
       </div>
 
       <div class="col-3" style="display:flex;align-items:flex-end">
-        <button class="btn-primary" style="width:100%" onclick="addSubjectRow()">إضافة مادة</button>
+        <button class="btn-secondary" style="width:100%" onclick="loadSubjectsForSelectedGrade()">Load</button>
       </div>
 
       <div class="col-3" style="display:flex;align-items:flex-end">
-        <button class="btn-danger" style="width:100%" onclick="clearSubjectsTable()">حذف كل المواد</button>
+        <button class="btn-primary" style="width:100%" onclick="addSubjectRow()">Add Subject</button>
+      </div>
+
+      <div class="col-3" style="display:flex;align-items:flex-end">
+        <button class="btn-danger" style="width:100%" onclick="clearSubjectsTable()">Delete All</button>
       </div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>المادة</th>
-          <th>الدرجة النهائية</th>
-          <th>حذف</th>
+          <th>Subject</th>
+          <th>Full Mark</th>
+          <th>Delete</th>
         </tr>
       </thead>
       <tbody id="subjects_body"></tbody>
     </table>
 
     <button class="btn-primary" style="margin-top:10px" onclick="saveSubjectsForSelectedGrade()">
-      حفظ مواد الصف
+      Save Grade Subjects
     </button>
   </div>
 
   <!-- Copy Subjects -->
   <div class="box">
-    <h3>نسخ مواد صف إلى صف آخر</h3>
+    <h3>Copy Subjects to Another Grade</h3>
+
     <div class="row">
       <div class="col-4">
-        <label>صف المصدر</label>
+        <label>From Grade</label>
         <select id="copy_from_grade"></select>
       </div>
+
       <div class="col-4">
-        <label>صف الهدف</label>
+        <label>To Grade</label>
         <select id="copy_to_grade"></select>
       </div>
+
       <div class="col-4" style="display:flex;align-items:flex-end">
-        <button class="btn-primary" style="width:100%" onclick="copySubjectsBetweenGrades()">نسخ المواد</button>
+        <button class="btn-primary" style="width:100%" onclick="copySubjectsBetweenGrades()">Copy</button>
       </div>
     </div>
   </div>
 
   <div class="box">
-    <button class="btn-secondary" onclick="location='admin.html'">لوحة المشرف</button>
-    <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
+    <button class="btn-secondary" onclick="location='admin.html'">Admin Panel</button>
+    <button class="btn-secondary" onclick="location='student.html'">Student Page</button>
   </div>
 
 </div>
@@ -142,18 +148,18 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
+// SAFE ENGLISH GRADE LIST
 var gradesList=[
- "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
- "1 متوسط","2 متوسط","3 متوسط",
- "1 ثانوي","2 ثانوي","3 ثانوي"
+ "Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6",
+ "Intermediate 1","Intermediate 2","Intermediate 3",
+ "Secondary 1","Secondary 2","Secondary 3"
 ];
 
-function init() {
-  let g1=document.getElementById("grade_select");
-  let g2=document.getElementById("copy_from_grade");
-  let g3=document.getElementById("copy_to_grade");
-  gradesList.forEach(g=>{
-    [g1,g2,g3].forEach(sel=>{
+function init(){
+  let selects=["grade_select","copy_from_grade","copy_to_grade"];
+  selects.forEach(id=>{
+    let sel=document.getElementById(id);
+    gradesList.forEach(g=>{
       let o=document.createElement("option");
       o.value=g; o.textContent=g;
       sel.appendChild(o);
@@ -174,6 +180,7 @@ async function saveExamType(){
   let v=document.getElementById("exam_type_input").value.trim();
   await db.collection("settings").doc("general").set({examType:v},{merge:true});
   document.getElementById("current_exam_label").innerText=v||"—";
+  alert("Saved!");
 }
 
 function addSubjectRow(data){
@@ -184,26 +191,26 @@ function addSubjectRow(data){
   tr.innerHTML=
   `<td><input class="sub-name" value="${name}"></td>
    <td><input type="number" class="sub-full" value="${full}"></td>
-   <td><button class="small-btn btn-danger" onclick="this.closest('tr').remove()">×</button></td>`;
+   <td><button class="small-btn btn-danger" onclick="this.closest('tr').remove()">X</button></td>`;
   tbody.appendChild(tr);
 }
 
 function clearSubjectsTable(){
-  if(confirm("حذف جميع المواد للصف؟"))
+  if(confirm("Delete all subjects for this grade?"))
     document.getElementById("subjects_body").innerHTML="";
 }
 
 async function loadSubjectsForSelectedGrade(){
   let g=document.getElementById("grade_select").value;
   let tbody=document.getElementById("subjects_body");
-  tbody.innerHTML="<tr><td colspan='3'>تحميل...</td></tr>";
+  tbody.innerHTML="<tr><td colspan='3'>Loading...</td></tr>";
 
   let d=await db.collection("settings").doc("subjects_"+g).get();
   tbody.innerHTML="";
-  if(!d.exists){tbody.innerHTML="<tr><td colspan='3'>لا توجد مواد</td></tr>";return;}
+  if(!d.exists){tbody.innerHTML="<tr><td colspan='3'>No subjects found</td></tr>";return;}
 
   let subs=d.data().subjects||[];
-  if(!subs.length){tbody.innerHTML="<tr><td colspan='3'>لا توجد مواد</td></tr>";return;}
+  if(!subs.length){tbody.innerHTML="<tr><td colspan='3'>No subjects found</td></tr>";return;}
 
   subs.forEach(s=>addSubjectRow(s));
 }
@@ -220,21 +227,21 @@ async function saveSubjectsForSelectedGrade(){
   });
 
   await db.collection("settings").doc("subjects_"+g).set({subjects:subs});
-  alert("تم الحفظ");
+  alert("Saved successfully!");
 }
 
 async function copySubjectsBetweenGrades(){
   let from=document.getElementById("copy_from_grade").value;
   let to=document.getElementById("copy_to_grade").value;
 
-  if(from===to){alert("لا يمكن النسخ لنفس الصف");return;}
+  if(from===to){alert("Cannot copy to same grade");return;}
 
   let d=await db.collection("settings").doc("subjects_"+from).get();
-  if(!d.exists){alert("صف المصدر لا يحتوي مواد");return;}
+  if(!d.exists){alert("Source grade has no subjects");return;}
 
   let subs=d.data().subjects||[];
   await db.collection("settings").doc("subjects_"+to).set({subjects:subs});
-  alert("تم النسخ بنجاح");
+  alert("Copied successfully!");
 }
 
 init();
