@@ -18,7 +18,10 @@ body{font-family:Calibri;background:#f4f4f4;margin:0}
 .box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
 h3{margin-top:0;color:#1976d2}
 label{display:block;margin-top:5px}
-input,select,button{font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
+input,select,button{
+  font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;
+  border-radius:6px;border:1px solid #999;box-sizing:border-box
+}
 input,select{width:100%}
 button{cursor:pointer;font-weight:bold;border:none}
 .btn-primary{background:#1976d2;color:#fff}
@@ -91,11 +94,11 @@ tr:nth-child(even){background:#f9f9f9}
     </div>
   </div>
 
-  <!-- كشف الطلاب -->
-  <div class="box">
+  <!-- كشف الطلاب (ملخص) - مخفي لكن موجود للـ Excel وغيره -->
+  <div class="box" style="display:none;">
     <h3>كشف الطلاب (ملخص)</h3>
 
-    <div style="margin-bottom:8px;font-size:14px;overflow:hidden;">
+    <div style="margin-bottom:8px;font-size:14px">
       <span>نوع الاختبار: </span>
       <span id="current_exam_type" class="badge">—</span>
       <button class="btn-secondary" style="float:left" onclick="location='settings.html'">إعداد المواد والاختبار</button>
@@ -116,10 +119,6 @@ tr:nth-child(even){background:#f9f9f9}
       </thead>
       <tbody id="students_body"></tbody>
     </table>
-
-    <button class="btn-secondary" style="margin-top:10px" onclick="exportStudentsSummaryPdf()">
-      تقرير PDF للكشف الملخص
-    </button>
   </div>
 
   <!-- رصد مجمع لصف كامل -->
@@ -154,6 +153,10 @@ tr:nth-child(even){background:#f9f9f9}
       حفظ درجات الصف بالكامل
     </button>
 
+    <button id="export_grade_pdf_btn" class="btn-secondary" style="margin-top:10px;display:none;" onclick="exportGradeToPDF()">
+      تصدير درجات الصف إلى PDF
+    </button>
+
     <button id="clear_one_subject_btn" class="btn-danger" style="margin-top:10px;display:none;" onclick="clearOneSubjectForCurrentGrade()">
       تفريغ مادة واحدة لهذا الصف
     </button>
@@ -161,21 +164,128 @@ tr:nth-child(even){background:#f9f9f9}
     <button id="clear_all_subjects_btn" class="btn-danger" style="margin-top:10px;display:none;" onclick="clearAllSubjectsForCurrentGrade()">
       تفريغ جميع المواد لهذا الصف
     </button>
+  </div>
 
-    <!-- زر تصدير PDF للصف الحالي -->
-    <button id="export_grade_pdf_btn" class="btn-secondary" style="margin-top:10px;display:none;" onclick="exportGradeMarksPdf()">
-      تقرير PDF للصف الحالي
-    </button>
+  <!-- إدارة المعلمين -->
+  <div class="box">
+    <h3>إدارة المعلمين</h3>
+
+    <div class="row">
+      <div class="col-3">
+        <label>معرّف المعلم (Document ID)</label>
+        <input id="t_id" placeholder="مثال: t1">
+      </div>
+      <div class="col-3">
+        <label>اسم المعلم</label>
+        <input id="t_name">
+      </div>
+      <div class="col-3">
+        <label>اسم المستخدم للدخول</label>
+        <input id="t_username" placeholder="username">
+      </div>
+      <div class="col-3">
+        <label>كلمة المرور</label>
+        <input id="t_password" type="text">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-4">
+        <label>الصفوف (افصل بينها بفاصلة)</label>
+        <input id="t_grades" placeholder="1 ابتدائي, 2 ابتدائي">
+      </div>
+      <div class="col-4">
+        <label>الشعب (افصل بينها بفاصلة)</label>
+        <input id="t_sections" placeholder="أ, ب, ج">
+      </div>
+      <div class="col-4">
+        <label>المواد (افصل بينها بفاصلة)</label>
+        <input id="t_subjects" placeholder="اللغة الإنجليزية, الرياضيات">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6" style="display:flex;align-items:flex-end">
+        <button class="btn-primary" style="width:100%" onclick="saveTeacher()">حفظ / تعديل المعلم</button>
+      </div>
+      <div class="col-6" style="display:flex;align-items:flex-end">
+        <button class="btn-secondary" style="width:100%" onclick="loadTeachers()">تحميل قائمة المعلمين</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>المعرف</th>
+          <th>الاسم</th>
+          <th>المستخدم</th>
+          <th>الصفوف</th>
+          <th>الشعب</th>
+          <th>المواد</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="teachers_body"></tbody>
+    </table>
+  </div>
+
+  <!-- إدارة المشرفين -->
+  <div class="box">
+    <h3>إدارة المشرفين</h3>
+
+    <div class="row">
+      <div class="col-3">
+        <label>معرّف المشرف (Document ID)</label>
+        <input id="s_id" placeholder="مثال: s1">
+      </div>
+      <div class="col-3">
+        <label>اسم المشرف</label>
+        <input id="s_name">
+      </div>
+      <div class="col-3">
+        <label>اسم المستخدم للدخول</label>
+        <input id="s_username" placeholder="username">
+      </div>
+      <div class="col-3">
+        <label>كلمة المرور</label>
+        <input id="s_password" type="text">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <label>معلمي هذا المشرف (أسماء المستخدمين مفصولة بفاصلة)</label>
+        <input id="s_teachers" placeholder="t1, t2, t3">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6" style="display:flex;align-items:flex-end">
+        <button class="btn-primary" style="width:100%" onclick="saveSupervisor()">حفظ / تعديل المشرف</button>
+      </div>
+      <div class="col-6" style="display:flex;align-items:flex-end">
+        <button class="btn-secondary" style="width:100%" onclick="loadSupervisors()">تحميل قائمة المشرفين</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>المعرف</th>
+          <th>الاسم</th>
+          <th>المستخدم</th>
+          <th>المعلمون التابعون له</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="supervisors_body"></tbody>
+    </table>
   </div>
 
   <div class="box">
     <button class="btn-secondary" onclick="exportToExcel()">تصدير Excel</button>
     <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
     <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
-  </div>
-
-  <div style="text-align:center;margin-top:10px;font-size:13px;color:#555">
-    تصميم محمد عامر أحمد
   </div>
 
 </div>
@@ -609,114 +719,154 @@ function exportToExcel(){
   XLSX.writeFile(wb,"students.xlsx");
 }
 
-async function importStudentsFromExcel(){
-  let input=document.getElementById("students_file");
-  let file=input.files[0];
-  if(!file){
-    alert("اختر ملف الطلاب أولاً");
-    return;
-  }
-
-  let reader=new FileReader();
-  reader.onload=async function(e){
-    try{
-      let data=new Uint8Array(e.target.result);
-      let wb=XLSX.read(data,{type:"array"});
-      let ws=wb.Sheets[wb.SheetNames[0]];
-      let rows=XLSX.utils.sheet_to_json(ws,{header:1});
-
-      if(!rows.length){
-        alert("الملف فارغ");
-        return;
-      }
-
-      let batch=db.batch();
-      let count=0;
-
-      rows.forEach((r,index)=>{
-        if(index===0)return;
-        let code=(r[0]||"").toString().trim();
-        let name=(r[1]||"").toString().trim();
-        let grade=(r[2]||"").toString().trim();
-        let section=(r[3]||"").toString().trim();
-        if(!code || !name)return;
-
-        let ref=db.collection("students").doc(code);
-        batch.set(ref,{
-          code:code,
-          name:name,
-          grade:grade,
-          section:section,
-          examType:examType||"",
-          subjects:{}
-        },{merge:true});
-        count++;
-      });
-
-      if(count===0){
-        alert("لم يتم العثور على بيانات طلاب صالحة في الملف");
-        return;
-      }
-
-      await batch.commit();
-      alert("تم استيراد "+count+" طالبًا بنجاح");
-      input.value="";
-      loadStudents();
-    }catch(err){
-      console.log(err);
-      alert("خطأ أثناء قراءة الملف");
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-/* PDF report for grade table */
-function exportGradeMarksPdf(){
-  let grade=currentGradeForMarks;
-  let section=currentSectionForMarks || "كل الشعب";
-  let examTitle=document.getElementById("current_exam_type").innerText || "";
+function exportGradeToPDF(){
   let table=document.getElementById("grade_marks_table");
-  if(!grade || table.style.display==="none"){
-    alert("اعرض طلاب الصف أولاً من زر عرض طلاب الصف للرصد");
+  if(!table || table.style.display==="none"){
+    alert("اعرض طلاب الصف أولاً");
+    return;
+  }
+  let win=window.open("","_blank");
+  win.document.write("<html><head><meta charset='UTF-8'><title>درجات الصف</title></head><body>");
+  win.document.write("<h3 style='text-align:center'>درجات الصف</h3>");
+  win.document.write(table.outerHTML);
+  win.document.write("</body></html>");
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+/* إدارة المعلمين */
+
+async function saveTeacher(){
+  let id=document.getElementById("t_id").value.trim();
+  let name=document.getElementById("t_name").value.trim();
+  let username=document.getElementById("t_username").value.trim();
+  let password=document.getElementById("t_password").value.trim();
+  let gradesStr=document.getElementById("t_grades").value.trim();
+  let sectionsStr=document.getElementById("t_sections").value.trim();
+  let subjectsStr=document.getElementById("t_subjects").value.trim();
+
+  if(!id || !name || !username || !password){
+    alert("أدخل المعرف والاسم واسم المستخدم وكلمة المرور");
     return;
   }
 
-  let win=window.open("","_blank");
-  win.document.write("<html><head><meta charset='UTF-8'><title>تقرير درجات الصف</title>");
-  win.document.write("<style>body{font-family:Calibri;direction:rtl;text-align:center;} h1,h2,h3{margin:4px 0;} table{border-collapse:collapse;width:100%;font-size:12px;margin-top:10px;} th,td{border:1px solid #555;padding:4px;} th{background:#1976d2;color:#fff;} .footer{margin-top:15px;font-size:12px;color:#555;}</style>");
-  win.document.write("</head><body>");
-  win.document.write("<h1>مدارس الفلاح الأهلية</h1>");
-  win.document.write("<h2>"+(examTitle||"تقرير الدرجات")+"</h2>");
-  win.document.write("<h3>الصف: "+grade+" - الشعبة: "+section+"</h3>");
-  win.document.write(table.outerHTML);
-  win.document.write("<div class='footer'>تصميم محمد عامر أحمد</div>");
-  win.document.write("</body></html>");
-  win.document.close();
-  win.focus();
-  win.print();
+  let grades=gradesStr?gradesStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+  let sections=sectionsStr?sectionsStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+  let subjects=subjectsStr?subjectsStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+
+  await db.collection("users").doc(id).set({
+    role:"teacher",
+    name:name,
+    username:username,
+    password:password,
+    grades:grades,
+    sections:sections,
+    subjects:subjects
+  },{merge:true});
+
+  alert("تم حفظ بيانات المعلم");
+  loadTeachers();
 }
 
-/* PDF report for students summary */
-function exportStudentsSummaryPdf(){
-  let examTitle=document.getElementById("current_exam_type").innerText || "";
-  let table=document.querySelector(".box table tbody#students_body").parentElement;
-  let win=window.open("","_blank");
-  win.document.write("<html><head><meta charset='UTF-8'><title>كشف الطلاب الملخص</title>");
-  win.document.write("<style>body{font-family:Calibri;direction:rtl;text-align:center;} h1,h2{margin:4px 0;} table{border-collapse:collapse;width:100%;font-size:12px;margin-top:10px;} th,td{border:1px solid #555;padding:4px;} th{background:#1976d2;color:#fff;} .footer{margin-top:15px;font-size:12px;color:#555;}</style>");
-  win.document.write("</head><body>");
-  win.document.write("<h1>مدارس الفلاح الأهلية</h1>");
-  win.document.write("<h2>"+(examTitle||"كشف الطلاب الملخص")+"</h2>");
-  win.document.write(table.outerHTML);
-  win.document.write("<div class='footer'>تصميم محمد عامر أحمد</div>");
-  win.document.write("</body></html>");
-  win.document.close();
-  win.focus();
-  win.print();
+async function loadTeachers(){
+  let tbody=document.getElementById("teachers_body");
+  tbody.innerHTML="<tr><td colspan='7'>تحميل...</td></tr>";
+  let snap=await db.collection("users").where("role","==","teacher").get();
+  tbody.innerHTML="";
+  if(snap.empty){
+    tbody.innerHTML="<tr><td colspan='7'>لا يوجد معلمون</td></tr>";
+    return;
+  }
+  snap.forEach(doc=>{
+    let d=doc.data();
+    let tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+doc.id+"</td>"+
+      "<td>"+(d.name||"")+"</td>"+
+      "<td>"+(d.username||"")+"</td>"+
+      "<td>"+(d.grades?d.grades.join("، "):"")+"</td>"+
+      "<td>"+(d.sections?d.sections.join("، "):"")+"</td>"+
+      "<td>"+(d.subjects?d.subjects.join("، "):"")+"</td>"+
+      "<td>"+
+        "<button class='small-btn btn-danger' onclick='deleteTeacher(\""+doc.id+"\")'>حذف</button>"+
+      "</td>";
+    tbody.appendChild(tr);
+  });
 }
 
+async function deleteTeacher(id){
+  if(!confirm("حذف هذا المعلم؟"))return;
+  await db.collection("users").doc(id).delete();
+  alert("تم حذف المعلم");
+  loadTeachers();
+}
+
+/* إدارة المشرفين */
+
+async function saveSupervisor(){
+  let id=document.getElementById("s_id").value.trim();
+  let name=document.getElementById("s_name").value.trim();
+  let username=document.getElementById("s_username").value.trim();
+  let password=document.getElementById("s_password").value.trim();
+  let teachersStr=document.getElementById("s_teachers").value.trim();
+
+  if(!id || !name || !username || !password){
+    alert("أدخل المعرف والاسم واسم المستخدم وكلمة المرور");
+    return;
+  }
+
+  let teachers=teachersStr?teachersStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+
+  await db.collection("users").doc(id).set({
+    role:"supervisor",
+    name:name,
+    username:username,
+    password:password,
+    teachers:teachers
+  },{merge:true});
+
+  alert("تم حفظ بيانات المشرف");
+  loadSupervisors();
+}
+
+async function loadSupervisors(){
+  let tbody=document.getElementById("supervisors_body");
+  tbody.innerHTML="<tr><td colspan='5'>تحميل...</td></tr>";
+  let snap=await db.collection("users").where("role","==","supervisor").get();
+  tbody.innerHTML="";
+  if(snap.empty){
+    tbody.innerHTML="<tr><td colspan='5'>لا يوجد مشرفون</td></tr>";
+    return;
+  }
+  snap.forEach(doc=>{
+    let d=doc.data();
+    let tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+doc.id+"</td>"+
+      "<td>"+(d.name||"")+"</td>"+
+      "<td>"+(d.username||"")+"</td>"+
+      "<td>"+(d.teachers?d.teachers.join("، "):"")+"</td>"+
+      "<td>"+
+        "<button class='small-btn btn-danger' onclick='deleteSupervisor(\""+doc.id+"\")'>حذف</button>"+
+      "</td>";
+    tbody.appendChild(tr);
+  });
+}
+
+async function deleteSupervisor(id){
+  if(!confirm("حذف هذا المشرف؟"))return;
+  await db.collection("users").doc(id).delete();
+  alert("تم حذف المشرف");
+  loadSupervisors();
+}
+
+/* تشغيل مبدئي */
 initGrades();
 loadSettings();
 loadStudents();
+loadTeachers();
+loadSupervisors();
 </script>
 
 </body>
