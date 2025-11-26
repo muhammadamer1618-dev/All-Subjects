@@ -2,90 +2,201 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مدارس الفلاح الأهلية - نظام الدرجات</title>
+<title>نظام النتائج - تسجيل الدخول</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   font-family:Calibri;
-  background:#f4f4f4;
+  background:linear-gradient(135deg,#1976d2,#42a5f5);
   margin:0;
-  padding:0;
+  min-height:100vh;
   display:flex;
-  justify-content:center;
   align-items:center;
-  height:100vh;
+  justify-content:center;
 }
-.container{
-  background:white;
-  width:420px;
-  padding:25px;
-  border-radius:15px;
+.card{
+  background:#fff;
+  width:360px;
+  max-width:95%;
+  padding:20px 20px 15px;
+  border-radius:14px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
   text-align:center;
-  box-shadow:0 0 12px rgba(0,0,0,0.15);
 }
 h1{
+  margin:0 0 10px;
   color:#1976d2;
-  margin-bottom:5px;
+  font-size:22px;
 }
 h2{
+  margin:0 0 15px;
   color:#d32f2f;
-  margin-top:0;
-  margin-bottom:20px;
+  font-size:18px;
+}
+label{
+  display:block;
+  text-align:right;
+  margin-top:8px;
+  font-weight:bold;
+}
+select,input{
+  width:100%;
+  box-sizing:border-box;
+  padding:8px;
+  margin-top:4px;
+  border-radius:8px;
+  border:1px solid #999;
+  font-family:Calibri;
+  font-size:15px;
 }
 button{
-  display:block;
   width:100%;
-  padding:12px;
-  font-size:18px;
-  font-weight:bold;
-  margin:10px 0;
+  margin-top:15px;
+  padding:10px;
   border:none;
   border-radius:8px;
+  background:#1976d2;
+  color:#fff;
+  font-weight:bold;
+  font-size:16px;
   cursor:pointer;
-  color:white;
 }
-.btn-admin{ background:#1976d2; }
-.btn-teacher{ background:#388e3c; }
-.btn-student{ background:#d32f2f; }
-button:hover{ opacity:0.9; }
+button:hover{opacity:0.9}
 
 .footer{
-  margin-top:25px;
-  font-size:15px;
-  color:#444;
+  margin-top:10px;
+  font-size:13px;
+  color:#555;
 }
 .footer img{
-  display:block;
-  margin:10px auto 0;
+  margin-top:5px;
   max-width:160px;
-  opacity:0.9;
+}
+.small-note{
+  margin-top:10px;
+  font-size:12px;
+  color:#444;
+  text-align:right;
 }
 </style>
-
 </head>
 <body>
 
-<div class="container">
+<div class="card">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>نظام رصد الدرجات</h2>
+  <h2>تسجيل الدخول</h2>
 
-  <button class="btn-admin" onclick="location='admin.html'">دخول المشرف</button>
-  <button class="btn-teacher" onclick="location='teacher-login.html'">دخول المعلم</button>
-  <button class="btn-student" onclick="location='student.html'">عرض نتيجة الطالب</button>
+  <label>الدور</label>
+  <select id="role">
+    <option value="super">مشرف عام</option>
+    <option value="admin">مشرف قسم (عرض فقط)</option>
+    <option value="teacher">معلم</option>
+  </select>
+
+  <label>اسم المستخدم</label>
+  <input id="username" placeholder="مثال: admin1 أو t1">
+
+  <label>كلمة المرور</label>
+  <input id="password" type="password" placeholder="••••••">
+
+  <button onclick="login()">دخول</button>
+
+  <div class="small-note">
+    • المشرف العام: بياناته ثابتة داخل الكود ويمكن تغييرها.<br>
+    • المشرفون والمعلمون: يتم تعريفهم في Firestore داخل المجموعتين
+    <b>admins</b> و <b>teachers</b> باسم مستخدم = ID الوثيقة.
+  </div>
 
   <div class="footer">
     تصميم محمد عامر أحمد
-    <div id="signature"></div>
+    <br>
+    <!-- احفظ صورة التوقيع باسم signature.png بجوار هذا الملف -->
+    <img src="signature.png" alt="توقيع محمد عامر أحمد">
   </div>
 </div>
 
 <script>
-/* لو أرسلت توقيع، سيتم وضعه تلقائيًا */
-let savedSig = localStorage.getItem("signature_image");
-if(savedSig){
-  document.getElementById("signature").innerHTML =
-    "<img src='"+savedSig+"' alt='توقيع'>";
+var firebaseConfig={
+  apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
+  authDomain:"all-subjects-14322.firebaseapp.com",
+  projectId:"all-subjects-14322",
+  storageBucket:"all-subjects-14322.firebasestorage.app",
+  messagingSenderId:"813955287168",
+  appId:"1:813955287168:web:07efa7dde95b117b9bbe65"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.firestore();
+
+// super admin credentials (you can change)
+const SUPER_USERNAME = "muhammad1618";
+const SUPER_PASSWORD = "Mustafa@2016";
+
+async function login(){
+  const role=document.getElementById("role").value;
+  const username=document.getElementById("username").value.trim();
+  const password=document.getElementById("password").value.trim();
+
+  if(!password || (role!=="super" && !username)){
+    alert("أدخل اسم المستخدم وكلمة المرور");
+    return;
+  }
+
+  try{
+    if(role==="super"){
+      if(username===SUPER_USERNAME && password===SUPER_PASSWORD){
+        localStorage.setItem("role","super");
+        localStorage.removeItem("adminId");
+        localStorage.removeItem("teacherId");
+        location="admin.html";
+      }else{
+        alert("بيانات المشرف العام غير صحيحة");
+      }
+      return;
+    }
+
+    if(role==="admin"){
+      let doc=await db.collection("admins").doc(username).get();
+      if(!doc.exists){
+        alert("هذا المشرف غير موجود في admins");
+        return;
+      }
+      let data=doc.data()||{};
+      if(data.password!==password){
+        alert("كلمة المرور غير صحيحة");
+        return;
+      }
+      localStorage.setItem("role","admin");
+      localStorage.setItem("adminId",username);
+      localStorage.removeItem("teacherId");
+      location="admin.html"; // نفس لوحة المشرف لكن ستكون عرض فقط
+      return;
+    }
+
+    if(role==="teacher"){
+      let doc=await db.collection("teachers").doc(username).get();
+      if(!doc.exists){
+        alert("هذا المعلم غير موجود في teachers");
+        return;
+      }
+      let data=doc.data()||{};
+      if(data.password!==password){
+        alert("كلمة المرور غير صحيحة");
+        return;
+      }
+      localStorage.setItem("role","teacher");
+      localStorage.setItem("teacherId",username);
+      localStorage.removeItem("adminId");
+      location="teacher.html";
+      return;
+    }
+  }catch(e){
+    console.log(e);
+    alert("خطأ في الاتصال بقاعدة البيانات");
+  }
 }
 </script>
 
