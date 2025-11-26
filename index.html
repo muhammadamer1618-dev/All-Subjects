@@ -2,87 +2,21 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>تسجيل الدخول - مدارس الفلاح الأهلية</title>
+<title>مدارس الفلاح الأهلية - نظام رصد الدرجات</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
 <style>
-body{
-  font-family:Calibri;
-  margin:0;
-  background:linear-gradient(135deg,#1976d2,#42a5f5);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-}
-.card{
-  background:#fff;
-  width:360px;
-  border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.25);
-  padding:25px 20px 20px;
-  text-align:center;
-}
-h1{
-  margin:0;
-  color:#1976d2;
-  font-size:24px;
-}
-h2{
-  margin:5px 0 15px;
-  color:#555;
-  font-size:18px;
-}
-label{
-  display:block;
-  text-align:right;
-  margin-top:10px;
-  font-weight:bold;
-  color:#333;
-}
-input,select{
-  width:100%;
-  padding:9px;
-  margin-top:5px;
-  border-radius:7px;
-  border:1px solid #999;
-  font-size:14px;
-  box-sizing:border-box;
-}
-button{
-  width:100%;
-  margin-top:15px;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-  background:#1976d2;
-  color:#fff;
-}
+body{font-family:Calibri;background:linear-gradient(135deg,#0d47a1,#1976d2);margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+.card{background:#fff;border-radius:14px;box-shadow:0 0 14px rgba(0,0,0,0.3);padding:25px;width:360px;text-align:center}
+h1{margin:0 0 5px;color:#0d47a1;font-size:22px}
+h2{margin:0 0 20px;color:#d32f2f;font-size:18px}
+label{display:block;text-align:right;margin:8px 0 3px;font-weight:bold}
+input,select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #999;font-size:15px;box-sizing:border-box}
+button{width:100%;margin-top:15px;padding:10px;border:none;border-radius:8px;background:#1976d2;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
 button:hover{opacity:0.9}
-.note{
-  font-size:13px;
-  color:#555;
-  margin-top:10px;
-}
-.footer{
-  margin-top:15px;
-  font-size:13px;
-  color:#666;
-}
-.role-hints{
-  font-size:12px;
-  color:#555;
-  margin-top:8px;
-  text-align:right;
-}
-.role-hints div{
-  margin-bottom:3px;
-}
+.note{margin-top:10px;font-size:12px;color:#555;text-align:right}
+.footer{margin-top:15px;font-size:12px;color:#555}
 </style>
 </head>
 <body>
@@ -91,29 +25,23 @@ button:hover{opacity:0.9}
   <h1>مدارس الفلاح الأهلية</h1>
   <h2>نظام رصد الدرجات</h2>
 
-  <label>البريد الإلكتروني</label>
-  <input id="email" type="email" placeholder="example@school.com">
+  <label>البريد الإلكتروني / اسم المستخدم</label>
+  <input id="login_username" placeholder="مثال: 20162018 أو 010096">
 
   <label>كلمة المرور</label>
-  <input id="password" type="password" placeholder="******">
+  <input id="login_password" type="password" placeholder="••••••••">
 
   <label>نوع الحساب</label>
-  <select id="role_select">
+  <select id="login_role">
     <option value="teacher">معلم</option>
     <option value="supervisor">مشرف</option>
     <option value="admin">مشرف عام</option>
   </select>
 
-  <button onclick="login()">دخول</button>
+  <button onclick="doLogin()">دخول</button>
 
   <div class="note">
     في حال وجود مشكلة في الدخول، الرجاء مراجعة المشرف العام للنظام.
-  </div>
-
-  <div class="role-hints">
-    <div>• المعلم: يمكنه رصد درجات فصوله فقط.</div>
-    <div>• المشرف: يتابع المعلمين المحددين له.</div>
-    <div>• المشرف العام: إدارة النظام بالكامل.</div>
   </div>
 
   <div class="footer">
@@ -133,60 +61,31 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
-async function login(){
-  var email=document.getElementById("email").value.trim().toLowerCase();
-  var pass=document.getElementById("password").value.trim();
-  var selectedRole=document.getElementById("role_select").value;
+async function doLogin(){
+  let username=document.getElementById("login_username").value.trim();
+  let password=document.getElementById("login_password").value.trim();
+  let role=document.getElementById("login_role").value;
 
-  if(!email || !pass){
-    alert("أدخل البريد الإلكتروني وكلمة المرور");
-    return;
-  }
+  if(!username||!password){alert("أدخل اسم المستخدم وكلمة المرور");return;}
 
   try{
-    var doc=await db.collection("users").doc(email).get();
-    if(!doc.exists){
-      alert("الحساب غير موجود");
-      return;
-    }
-    var u=doc.data()||{};
-    if(u.role!==selectedRole){
-      alert("نوع الحساب غير مطابق لما هو مسجل للنظام");
-      return;
-    }
-    if(u.active===false){
-      alert("هذا الحساب غير مفعل، راجع المشرف العام");
-      return;
-    }
-    if(u.password!==pass){
-      alert("كلمة المرور غير صحيحة");
-      return;
-    }
+    let doc=await db.collection("users").doc(username).get();
+    if(!doc.exists){alert("الحساب غير موجود");return;}
 
-    var currentUser={
-      email:email,
-      name:u.name||"",
-      role:u.role||"",
-      grades:u.grades||[],
-      sections:u.sections||[],
-      subjects:u.subjects||[],
-      teacherEmails:u.teacherEmails||[]
-    };
-    localStorage.setItem("currentUser",JSON.stringify(currentUser));
+    let u=doc.data();
+    if(u.role!==role){alert("نوع الحساب غير صحيح لهذا المستخدم");return;}
+    if(u.password!==password){alert("كلمة المرور غير صحيحة");return;}
 
-    if(u.role==="admin"){
-      location.href="admin.html";
-    }else if(u.role==="teacher"){
-      location.href="teacher.html";
-    }else if(u.role==="supervisor"){
-      location.href="supervisor.html";
+    if(role==="admin"){
+      location="admin.html?user="+encodeURIComponent(username);
+    }else if(role==="teacher"){
+      location="teacher.html?user="+encodeURIComponent(username);
     }else{
-      alert("نوع حساب غير معروف في النظام");
+      location="supervisor.html?user="+encodeURIComponent(username);
     }
-
   }catch(e){
     console.log(e);
-    alert("خطأ أثناء محاولة تسجيل الدخول");
+    alert("حدث خطأ أثناء تسجيل الدخول");
   }
 }
 </script>
