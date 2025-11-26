@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة المشرف - متابعة المعلمين</title>
+<link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+body{font-family:Calibri;background:#f4f4f4;margin:0}
+.header{
+  background:#6a1b9a;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+  position:relative;
+}
+.header h1{margin:0;font-size:22px}
+.header h2{margin:5px 0 0;font-size:16px;color:#ffeb3b}
+.header .logout{
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+}
+.header .logout button{
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  background:#d32f2f;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:Calibri;
+}
+.container{max-width:1100px;margin:20px auto;padding:10px}
+.box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
+h3{margin-top:0;color:#6a1b9a}
+label{display:block;margin-top:5px}
+input,select,button{font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
+input,select{width:100%}
+button{cursor:pointer;font-weight:bold;border:none}
+.btn-primary{background:#6a1b9a;color:#fff}
+.btn-secondary{background:#757575;color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.col-3{flex:1 1 23%}
+.col-4{flex:1 1 30%}
+.col-6{flex:1 1 48%}
+.col-12{flex:1 1 100%}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+th,td{border:1px solid #ccc;text-align:center;padding:6px}
+th{background:#6a1b9a;color:#fff}
+tr:nth-child(even){background:#f9f9f9}
+.badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:11px;background:#ede7f6;color:#4a148c}
+.info{font-size:13px;color:#555;margin-top:5px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>لوحة المشرف</h1>
+  <h2 id="supervisor_name_header">مرحبًا</h2>
+  <div class="logout">
+    <button onclick="logout()">خروج</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="box">
+    <h3>بيانات المشرف والمعلمين التابعين له</h3>
+    <div class="row">
+      <div class="col-6">
+        <label>اسم المشرف</label>
+        <div id="s_name" class="badge"></div>
+      </div>
+      <div class="col-6">
+        <label>البريد</label>
+        <div id="s_email" class="badge"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <label>المعلمون التابعون</label>
+        <div id="s_teachers" class="badge"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3>عرض درجات صف كامل (قراءة فقط)</h3>
+    <div class="row">
+      <div class="col-4">
+        <label>اختر معلم</label>
+        <select id="teacher_filter"></select>
+      </div>
+      <div class="col-4">
+        <label>الصف</label>
+        <input id="grade_input" placeholder="مثال: 1 ابتدائي">
+      </div>
+      <div class="col-4">
+        <label>الشعبة</label>
+        <input id="section_input" placeholder="مثال: أ">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-4" style="display:flex;align-items:flex-end">
+        <button class="btn-primary" style="width:100%" onclick="loadClassMarks()">عرض الدرجات</button>
+      </div>
+    </div>
+
+    <div id="sup_marks_container" style="margin-top:15px;overflow-x:auto;">
+      <table id="sup_marks_table" style="min-width:600px;display:none;">
+        <thead id="sup_marks_head"></thead>
+        <tbody id="sup_marks_body"></tbody>
+      </table>
+    </div>
+
+    <div class="info">
+      هذه الصفحة للمتابعة فقط، لا يمكن تعديل الدرجات من هنا.
+    </div>
+  </div>
+
+  <div class="box">
+    <button class="btn-secondary" onclick="location='index.html'">صفحة الدخول</button>
+    <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
+  </div>
+
+</div>
+
+<script>
+var firebaseConfig={
+  apiKey:"AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
+  authDomain:"all-subjects-14322.firebaseapp.com",
+  projectId:"all-subjects-14322",
+  storageBucket:"all-subjects-14322.firebasestorage.app",
+  messagingSenderId:"813955287168",
+  appId:"1:813955287168:web:07efa7dde95b117b9bbe65"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.firestore();
+
+var supUser=null;
+try{
+  var cu=localStorage.getItem("currentUser");
+  if(cu){
+    supUser=JSON.parse(cu);
+  }
+}catch(e){
+  supUser=null;
+}
+if(!supUser || supUser.role!=="supervisor"){
+  location.href="index.html";
+}
+
+function logout(){
+  localStorage.removeItem("currentUser");
+  location.href="index.html";
+}
+
+async function fillSupervisorInfo(){
+  document.getElementById("supervisor_name_header").innerText="مرحبًا، "+(supUser.name||"");
+  document.getElementById("s_name").innerText=supUser.name||"";
+  document.getElementById("s_email").innerText=supUser.email||"";
+
+  var arr=supUser.teacherEmails||[];
+  document.getElementById("s_teachers").innerText=arr.length?arr.join(" ، "):"لا يوجد معلمون محددون";
+
+  var sel=document.getElementById("teacher_filter");
+  sel.innerHTML="";
+  if(!arr.length){
+    var o=document.createElement("option");
+    o.value="";o.textContent="لا يوجد معلمون";
+    sel.appendChild(o);
+  }else{
+    arr.forEach(t=>{
+      var o=document.createElement("option");
+      o.value=t;o.textContent=t;
+      sel.appendChild(o);
+    });
+  }
+}
+
+async function getSubjectsTemplateForGrade(grade){
+  let doc=await db.collection("settings").doc("subjects_"+grade).get();
+  if(doc.exists){
+    return doc.data().subjects||[];
+  }
+  return [];
+}
+
+async function loadClassMarks(){
+  var teacherEmail=document.getElementById("teacher_filter").value;
+  var grade=document.getElementById("grade_input").value.trim();
+  var section=document.getElementById("section_input").value.trim();
+
+  if(!teacherEmail){
+    alert("اختر معلم");
+    return;
+  }
+  if(!grade){
+    alert("أدخل الصف");
+    return;
+  }
+  if(!section){
+    alert("أدخل الشعبة");
+    return;
+  }
+
+  var table=document.getElementById("sup_marks_table");
+  var head=document.getElementById("sup_marks_head");
+  var body=document.getElementById("sup_marks_body");
+
+  head.innerHTML="";
+  body.innerHTML="";
+  table.style.display="none";
+
+  var subjects=await getSubjectsTemplateForGrade(grade);
+  if(!subjects.length){
+    alert("لا توجد مواد محفوظة لهذا الصف في الإعدادات");
+    return;
+  }
+
+  var snap=await db.collection("students").where("grade","==",grade).get();
+  var students=[];
+  snap.forEach(doc=>{
+    var s=doc.data();
+    if(s.section!==section)return;
+    students.push(s);
+  });
+
+  if(!students.length){
+    alert("لا يوجد طلاب لهذا الصف/الشعبة");
+    return;
+  }
+
+  students.sort((a,b)=>(a.name||"").localeCompare(b.name||"","ar"));
+
+  var trHead=document.createElement("tr");
+  trHead.innerHTML="<th>الكود</th><th>اسم الطالب</th>";
+  subjects.forEach(sub=>{
+    trHead.innerHTML+="<th>"+sub.name+"</th>";
+  });
+  head.appendChild(trHead);
+
+  students.forEach(st=>{
+    var tr=document.createElement("tr");
+    var rowHtml="<td>"+(st.code||"")+"</td><td>"+(st.name||"")+"</td>";
+    subjects.forEach(sub=>{
+      var val="";
+      if(st.subjects && st.subjects[sub.name]){
+        val=st.subjects[sub.name].mark||0;
+      }
+      rowHtml+="<td>"+val+"</td>";
+    });
+    tr.innerHTML=rowHtml;
+    body.appendChild(tr);
+  });
+
+  table.style.display="table";
+}
+
+fillSupervisorInfo();
+</script>
+
+</body>
+</html>
