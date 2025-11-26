@@ -11,17 +11,36 @@
 
 <style>
 body{font-family:Calibri;background:#f4f4f4;margin:0}
-.header{background:#1976d2;color:#fff;text-align:center;padding:15px}
+.header{
+  background:#1976d2;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+  position:relative;
+}
 .header h1{margin:0;font-size:24px}
 .header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b}
+.header .logout{
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+}
+.header .logout button{
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  background:#d32f2f;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  font-family:Calibri;
+}
 .container{max-width:1200px;margin:20px auto;padding:10px}
 .box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
 h3{margin-top:0;color:#1976d2}
 label{display:block;margin-top:5px}
-input,select,button{
-  font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;
-  border-radius:6px;border:1px solid #999;box-sizing:border-box
-}
+input,select,button{font-family:Calibri;font-size:15px;padding:7px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box}
 input,select{width:100%}
 button{cursor:pointer;font-weight:bold;border:none}
 .btn-primary{background:#1976d2;color:#fff}
@@ -41,6 +60,8 @@ tr:nth-child(even){background:#f9f9f9}
 .sub-table th{background:#42a5f5}
 .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:11px;background:#e3f2fd;color:#0d47a1}
 .info{font-size:13px;color:#555;margin-top:5px}
+.tag{display:inline-block;padding:2px 6px;border-radius:10px;font-size:11px;background:#e0f2f1;color:#004d40;margin:1px}
+.role-label{font-size:13px;color:#333}
 </style>
 </head>
 <body>
@@ -48,84 +69,87 @@ tr:nth-child(even){background:#f9f9f9}
 <div class="header">
   <h1>مدارس الفلاح الأهلية</h1>
   <h2 id="header_exam">لوحة المشرف - نظام رصد الدرجات</h2>
+  <div class="logout">
+    <button onclick="logout()">تسجيل الخروج</button>
+  </div>
 </div>
 
 <div class="container">
 
-  <!-- إدارة المعلمين -->
+  <!-- إدارة المستخدمين (مشرفين + معلمين + مشرف عام) -->
   <div class="box">
-    <h3>إدارة المعلمين</h3>
+    <h3>إدارة المستخدمين (مشرفين / معلمين / مشرف عام)</h3>
 
     <div class="row">
       <div class="col-3">
-        <label>كود المعلم</label>
-        <input id="t_code" placeholder="مثال: T001">
+        <label>الاسم الظاهر</label>
+        <input id="user_name" placeholder="اسم المستخدم">
       </div>
       <div class="col-3">
-        <label>اسم المعلم</label>
-        <input id="t_name" placeholder="اسم المعلم">
+        <label>البريد الإلكتروني</label>
+        <input id="user_email" type="email" placeholder="example@school.com">
       </div>
       <div class="col-3">
         <label>كلمة المرور</label>
-        <input id="t_password" placeholder="كلمة المرور">
+        <input id="user_password" type="password" placeholder="******">
       </div>
-      <div class="col-3" style="display:flex;align-items:flex-end;gap:5px">
-        <button class="btn-primary" style="width:50%" onclick="saveTeacher()">حفظ/تحديث المعلم</button>
-        <button class="btn-secondary" style="width:50%" onclick="loadTeacher()">تحميل المعلم</button>
+      <div class="col-3">
+        <label>النوع</label>
+        <select id="user_role">
+          <option value="teacher">معلم</option>
+          <option value="supervisor">مشرف</option>
+          <option value="admin">مشرف عام</option>
+        </select>
       </div>
     </div>
 
-    <hr>
-
-    <h4 style="color:#1976d2;margin-top:0">الفصول والمواد المسندة للمعلم</h4>
+    <div class="row">
+      <div class="col-4">
+        <label>صفوف المعلم (مفصولة بفاصلة)</label>
+        <input id="user_grades" placeholder="مثال: 1 ابتدائي,2 ابتدائي">
+      </div>
+      <div class="col-4">
+        <label>الشعب (مفصولة بفاصلة)</label>
+        <input id="user_sections" placeholder="مثال: أ,ب,ج">
+      </div>
+      <div class="col-4">
+        <label>المواد (مفصولة بفاصلة)</label>
+        <input id="user_subjects" placeholder="مثال: لغتي,رياضيات,علوم">
+      </div>
+    </div>
 
     <div class="row">
-      <div class="col-3">
-        <label>الصف</label>
-        <select id="t_grade"></select>
-      </div>
-      <div class="col-3">
-        <label>الشعبة</label>
-        <select id="t_section">
-          <option>أ</option><option>ب</option><option>ج</option><option>د</option><option>هـ</option>
-        </select>
-      </div>
-      <div class="col-3">
-        <label>المادة (اكتبها بنفس اسمها في الإعدادات)</label>
-        <input id="t_subject" placeholder="مثال: اللغة الإنجليزية">
+      <div class="col-6">
+        <label>معلمو المشرف (ايميلات مفصولة بفاصلة)</label>
+        <input id="user_teacher_emails" placeholder="teacher1@,teacher2@ (يستخدم مع نوع مشرف)">
       </div>
       <div class="col-3" style="display:flex;align-items:flex-end">
-        <button class="btn-secondary" style="width:100%" onclick="addTeacherAssignment()">إضافة صف/شعبة/مادة</button>
+        <button class="btn-primary" style="width:100%" onclick="addUser()">إضافة / تحديث مستخدم</button>
       </div>
+      <div class="col-3" style="display:flex;align-items:flex-end">
+        <button class="btn-secondary" style="width:100%" onclick="loadUsers()">تحديث قائمة المستخدمين</button>
+      </div>
+    </div>
+
+    <div class="info">
+      للمعلم: استخدم الحقول (صفوف / شعب / مواد).  
+      للمشرف: استخدم حقل "معلمو المشرف" فقط.  
+      للمشرف العام: يمكن ترك باقي الحقول فارغة.
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>الصف</th>
-          <th>الشعبة</th>
-          <th>المادة</th>
-          <th>حذف</th>
-        </tr>
-      </thead>
-      <tbody id="teacher_assignments_body"></tbody>
-    </table>
-
-    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn-danger" style="flex:1" onclick="deleteTeacher()">حذف المعلم</button>
-      <button class="btn-secondary" style="flex:1" onclick="clearTeacherForm()">تفريغ النموذج</button>
-      <button class="btn-secondary" style="flex:1" onclick="loadAllTeachers()">عرض جميع المعلمين</button>
-    </div>
-
-    <table style="margin-top:10px" id="all_teachers_table">
-      <thead>
-        <tr>
-          <th>الكود</th>
           <th>الاسم</th>
-          <th>عدد الفصول/المواد</th>
+          <th>البريد</th>
+          <th>النوع</th>
+          <th>الصفوف / الشعب / المواد</th>
+          <th>معلمو المشرف</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
         </tr>
       </thead>
-      <tbody id="all_teachers_body"></tbody>
+      <tbody id="users_body"></tbody>
     </table>
   </div>
 
@@ -241,9 +265,8 @@ tr:nth-child(even){background:#f9f9f9}
 
   <div class="box">
     <button class="btn-secondary" onclick="exportToExcel()">تصدير Excel</button>
-    <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
+    <button class="btn-secondary" onclick="location='index.html'">صفحة الدخول</button>
     <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
-    <button class="btn-secondary" onclick="location='teacher-login.html'">دخول المعلم</button>
   </div>
 
 </div>
@@ -260,6 +283,26 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
+// auth guard
+var currentUser=null;
+try{
+  var cu=localStorage.getItem("currentUser");
+  if(cu){
+    currentUser=JSON.parse(cu);
+  }
+}catch(e){
+  currentUser=null;
+}
+if(!currentUser || currentUser.role!=="admin"){
+  location.href="index.html";
+}
+
+function logout(){
+  localStorage.removeItem("currentUser");
+  location.href="index.html";
+}
+
+// data
 var gradesList=[
   "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
   "1 متوسط","2 متوسط","3 متوسط",
@@ -270,12 +313,9 @@ var examType="";
 var studentsCache=[];
 var studentsByCode={};
 var subjectsCacheByGrade={};
-
 var currentGradeForMarks="";
 var currentSectionForMarks="";
 var currentSubjectsForMarks=[];
-
-var currentTeacherAssignments=[];
 
 const gradeOrder={
   "1 ابتدائي":1,"2 ابتدائي":2,"3 ابتدائي":3,
@@ -295,7 +335,7 @@ function calcRating(m,f){
   return"ضعيف";
 }
 
-/* إعدادات عامة */
+// exam type
 async function loadSettings(){
   try{
     let set=await db.collection("settings").doc("general").get();
@@ -309,134 +349,175 @@ async function loadSettings(){
   }catch(e){console.log(e);}
 }
 
-/* تهيئة القوائم الخاصة بالصفوف */
+// init grades
 function initGrades(){
   var g1=document.getElementById("new_grade");
   var g2=document.getElementById("marks_grade");
-  var tg=document.getElementById("t_grade");
   gradesList.forEach(x=>{
     let o1=document.createElement("option");o1.value=x;o1.textContent=x;
     let o2=document.createElement("option");o2.value=x;o2.textContent=x;
-    let o3=document.createElement("option");o3.value=x;o3.textContent=x;
-    g1.appendChild(o1);g2.appendChild(o2);tg.appendChild(o3);
+    g1.appendChild(o1);g2.appendChild(o2);
   });
 }
 
-/* إدارة المعلمين */
-function renderTeacherAssignments(){
-  let tbody=document.getElementById("teacher_assignments_body");
-  tbody.innerHTML="";
-  if(!currentTeacherAssignments.length){
-    let tr=document.createElement("tr");
-    tr.innerHTML="<td colspan='4'>لا توجد فصول/مواد مسندة</td>";
-    tbody.appendChild(tr);
+// users management
+async function addUser(){
+  var name=document.getElementById("user_name").value.trim();
+  var email=document.getElementById("user_email").value.trim().toLowerCase();
+  var pass=document.getElementById("user_password").value.trim();
+  var role=document.getElementById("user_role").value;
+  var gradesStr=document.getElementById("user_grades").value.trim();
+  var sectionsStr=document.getElementById("user_sections").value.trim();
+  var subjectsStr=document.getElementById("user_subjects").value.trim();
+  var teacherEmailsStr=document.getElementById("user_teacher_emails").value.trim();
+
+  if(!email || !role){
+    alert("البريد والنوع مطلوبان");
     return;
   }
-  currentTeacherAssignments.forEach((a,index)=>{
-    let tr=document.createElement("tr");
-    tr.innerHTML=
-      "<td>"+a.grade+"</td>"+
-      "<td>"+a.section+"</td>"+
-      "<td>"+a.subject+"</td>"+
-      "<td><button class='small-btn btn-danger' onclick='removeTeacherAssignment("+index+")'>حذف</button></td>";
-    tbody.appendChild(tr);
-  });
-}
-
-function addTeacherAssignment(){
-  let grade=document.getElementById("t_grade").value;
-  let section=document.getElementById("t_section").value;
-  let subject=document.getElementById("t_subject").value.trim();
-  if(!grade || !section || !subject){
-    alert("أكمل بيانات الصف والشعبة والمادة");
+  if(!pass){
+    alert("كلمة المرور مطلوبة عند إضافة أو تحديث المستخدم");
     return;
   }
-  let exists=currentTeacherAssignments.some(a=>a.grade===grade && a.section===section && a.subject===subject);
-  if(exists){
-    alert("هذا الصف/الشعبة/المادة مضاف بالفعل للمعلم");
-    return;
+
+  var grades=gradesStr?gradesStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+  var sections=sectionsStr?sectionsStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+  var subjects=subjectsStr?subjectsStr.split(",").map(x=>x.trim()).filter(x=>x):[];
+  var teacherEmails=teacherEmailsStr?teacherEmailsStr.split(",").map(x=>x.trim().toLowerCase()).filter(x=>x):[];
+
+  var data={
+    name:name||"",
+    email:email,
+    password:pass,
+    role:role,
+    active:true
+  };
+
+  if(role==="teacher"){
+    data.grades=grades;
+    data.sections=sections;
+    data.subjects=subjects;
+    data.teacherEmails=[];
+  }else if(role==="supervisor"){
+    data.teacherEmails=teacherEmails;
+    data.grades=[];
+    data.sections=[];
+    data.subjects=[];
+  }else if(role==="admin"){
+    data.grades=[];
+    data.sections=[];
+    data.subjects=[];
+    data.teacherEmails=[];
   }
-  currentTeacherAssignments.push({grade:grade,section:section,subject:subject});
-  document.getElementById("t_subject").value="";
-  renderTeacherAssignments();
-}
 
-function removeTeacherAssignment(i){
-  currentTeacherAssignments.splice(i,1);
-  renderTeacherAssignments();
-}
-
-async function saveTeacher(){
-  let code=document.getElementById("t_code").value.trim();
-  let name=document.getElementById("t_name").value.trim();
-  let password=document.getElementById("t_password").value.trim();
-  if(!code || !name || !password){
-    alert("أدخل كود المعلم واسم المعلم وكلمة المرور");
-    return;
+  try{
+    await db.collection("users").doc(email).set(data,{merge:true});
+    alert("تم حفظ المستخدم بنجاح");
+    loadUsers();
+  }catch(e){
+    console.log(e);
+    alert("خطأ أثناء حفظ المستخدم");
   }
-  await db.collection("teachers").doc(code).set({
-    code:code,
-    name:name,
-    password:password,
-    assignments:currentTeacherAssignments
-  },{merge:true});
-  alert("تم حفظ بيانات المعلم");
 }
 
-async function loadTeacher(){
-  let code=document.getElementById("t_code").value.trim();
-  if(!code){alert("أدخل كود المعلم أولاً");return;}
-  let doc=await db.collection("teachers").doc(code).get();
-  if(!doc.exists){
-    alert("المعلم غير موجود");
-    return;
+async function loadUsers(){
+  var tbody=document.getElementById("users_body");
+  tbody.innerHTML="<tr><td colspan='7'>جاري التحميل...</td></tr>";
+  try{
+    var snap=await db.collection("users").get();
+    tbody.innerHTML="";
+    if(snap.empty){
+      tbody.innerHTML="<tr><td colspan='7'>لا يوجد مستخدمون</td></tr>";
+      return;
+    }
+    snap.forEach(doc=>{
+      var u=doc.data()||{};
+      var tr=document.createElement("tr");
+
+      var roleText=u.role==="admin"?"مشرف عام":(u.role==="teacher"?"معلم":(u.role==="supervisor"?"مشرف":u.role||""));
+
+      var assignText="";
+      if(u.role==="teacher"){
+        var parts=[];
+        if(u.grades && u.grades.length){
+          parts.push("صفوف: "+u.grades.join(" ، "));
+        }
+        if(u.sections && u.sections.length){
+          parts.push("شعب: "+u.sections.join(" ، "));
+        }
+        if(u.subjects && u.subjects.length){
+          parts.push("مواد: "+u.subjects.join(" ، "));
+        }
+        assignText=parts.join(" | ");
+      }
+
+      var supText="";
+      if(u.role==="supervisor" && u.teacherEmails && u.teacherEmails.length){
+        supText=u.teacherEmails.join(" ، ");
+      }
+
+      var stateLabel=u.active===false?"معطل":"نشط";
+
+      tr.innerHTML=
+        "<td>"+(u.name||"")+"</td>"+
+        "<td>"+(u.email||doc.id)+"</td>"+
+        "<td class='role-label'>"+roleText+"</td>"+
+        "<td>"+assignText+"</td>"+
+        "<td>"+supText+"</td>"+
+        "<td>"+stateLabel+"</td>"+
+        "<td>"+
+          "<button class='small-btn btn-secondary' onclick='toggleUserActive(\""+doc.id+"\")'>تفعيل/تعطيل</button> "+
+          "<button class='small-btn btn-secondary' onclick='changeUserPassword(\""+doc.id+"\")'>تغيير كلمة السر</button> "+
+          "<button class='small-btn btn-danger' onclick='deleteUser(\""+doc.id+"\")'>حذف</button>"+
+        "</td>";
+      tbody.appendChild(tr);
+    });
+  }catch(e){
+    console.log(e);
+    tbody.innerHTML="<tr><td colspan='7'>خطأ في تحميل المستخدمين</td></tr>";
   }
-  let d=doc.data();
-  document.getElementById("t_name").value=d.name||"";
-  document.getElementById("t_password").value=d.password||"";
-  currentTeacherAssignments=(d.assignments||[]).map(a=>({grade:a.grade,section:a.section,subject:a.subject}));
-  renderTeacherAssignments();
 }
 
-async function deleteTeacher(){
-  let code=document.getElementById("t_code").value.trim();
-  if(!code){alert("أدخل كود المعلم أولاً");return;}
-  if(!confirm("هل تريد حذف هذا المعلم وجميع صلاحياته؟"))return;
-  await db.collection("teachers").doc(code).delete();
-  alert("تم حذف المعلم");
-  clearTeacherForm();
-}
-
-function clearTeacherForm(){
-  document.getElementById("t_code").value="";
-  document.getElementById("t_name").value="";
-  document.getElementById("t_password").value="";
-  currentTeacherAssignments=[];
-  renderTeacherAssignments();
-}
-
-async function loadAllTeachers(){
-  let tbody=document.getElementById("all_teachers_body");
-  tbody.innerHTML="<tr><td colspan='3'>جاري التحميل...</td></tr>";
-  let snap=await db.collection("teachers").get();
-  tbody.innerHTML="";
-  if(snap.empty){
-    tbody.innerHTML="<tr><td colspan='3'>لا يوجد معلمون</td></tr>";
-    return;
+async function toggleUserActive(email){
+  if(!confirm("تبديل حالة التفعيل لهذا المستخدم؟"))return;
+  try{
+    var ref=db.collection("users").doc(email);
+    var doc=await ref.get();
+    if(!doc.exists)return;
+    var cur=doc.data().active===false?true:false;
+    await ref.update({active:cur});
+    loadUsers();
+  }catch(e){
+    console.log(e);
+    alert("خطأ أثناء تغيير الحالة");
   }
-  snap.forEach(doc=>{
-    let d=doc.data();
-    let tr=document.createElement("tr");
-    let count=(d.assignments||[]).length;
-    tr.innerHTML=
-      "<td>"+(d.code||"")+"</td>"+
-      "<td>"+(d.name||"")+"</td>"+
-      "<td>"+count+"</td>";
-    tbody.appendChild(tr);
-  });
 }
 
-/* إضافة طالب جديد */
+async function changeUserPassword(email){
+  var p=prompt("أدخل كلمة المرور الجديدة:");
+  if(!p)return;
+  try{
+    await db.collection("users").doc(email).update({password:p});
+    alert("تم تحديث كلمة المرور");
+  }catch(e){
+    console.log(e);
+    alert("خطأ أثناء تحديث كلمة المرور");
+  }
+}
+
+async function deleteUser(email){
+  if(!confirm("حذف هذا المستخدم نهائيا؟"))return;
+  try{
+    await db.collection("users").doc(email).delete();
+    alert("تم الحذف");
+    loadUsers();
+  }catch(e){
+    console.log(e);
+    alert("خطأ أثناء الحذف");
+  }
+}
+
+// students
 async function addNewStudent(){
   let code=document.getElementById("new_code").value.trim();
   let name=document.getElementById("new_name").value.trim();
@@ -457,7 +538,6 @@ async function addNewStudent(){
   loadStudents();
 }
 
-/* حذف جميع الطلاب */
 async function deleteAllStudents(){
   if(!confirm("هل تريد حذف جميع الطلاب؟"))return;
   let snap=await db.collection("students").get();
@@ -468,7 +548,6 @@ async function deleteAllStudents(){
   loadStudents();
 }
 
-/* حذف طالب واحد */
 async function deleteStudent(code){
   if(!code)return;
   if(!confirm("هل تريد حذف هذا الطالب؟"))return;
@@ -477,7 +556,6 @@ async function deleteStudent(code){
   loadStudents();
 }
 
-/* نقل طالب */
 async function moveStudent(code){
   if(!code)return;
   let doc=await db.collection("students").doc(code).get();
@@ -503,7 +581,6 @@ async function moveStudent(code){
   loadStudents();
 }
 
-/* تحميل الطلاب (ملخص) */
 async function loadStudents(){
   let fname=document.getElementById("filter_name").value.trim();
   let fcode=document.getElementById("filter_code").value.trim();
@@ -568,7 +645,6 @@ async function loadStudents(){
   });
 }
 
-/* كاش لمواد الصف */
 async function getSubjectsTemplateForGrade(grade){
   if(subjectsCacheByGrade[grade])return subjectsCacheByGrade[grade];
   let doc=await db.collection("settings").doc("subjects_"+grade).get();
@@ -579,7 +655,6 @@ async function getSubjectsTemplateForGrade(grade){
   return [];
 }
 
-/* رصد صف كامل */
 async function loadGradeMarks(){
   let grade=document.getElementById("marks_grade").value;
   let section=document.getElementById("marks_section").value;
@@ -663,7 +738,6 @@ async function loadGradeMarks(){
   currentSubjectsForMarks=subjects.map(s=>s.name);
 }
 
-/* حفظ درجات الصف بالكامل */
 async function saveGradeMarks(){
   let inputs=document.querySelectorAll(".gm-mark");
   if(!inputs.length){
@@ -699,7 +773,6 @@ async function saveGradeMarks(){
   loadStudents();
 }
 
-/* تفريغ مادة واحدة */
 async function clearOneSubjectForCurrentGrade(){
   if(!currentGradeForMarks || !currentSubjectsForMarks.length){
     alert("اعرض الصف أولاً من زر عرض طلاب الصف للرصد");
@@ -748,7 +821,6 @@ async function clearOneSubjectForCurrentGrade(){
   await loadStudents();
 }
 
-/* تفريغ جميع المواد */
 async function clearAllSubjectsForCurrentGrade(){
   if(!currentGradeForMarks){
     alert("اعرض الصف أولاً من زر عرض طلاب الصف للرصد");
@@ -783,7 +855,6 @@ async function clearAllSubjectsForCurrentGrade(){
   await loadStudents();
 }
 
-/* تصدير Excel */
 function exportToExcel(){
   let rows=[["الكود","الاسم","الصف","الشعبة","عدد المواد","الإجمالي","التقدير العام"]];
   document.querySelectorAll("#students_body tr").forEach(tr=>{
@@ -805,7 +876,6 @@ function exportToExcel(){
   XLSX.writeFile(wb,"students.xlsx");
 }
 
-/* استيراد الطلاب من Excel */
 async function importStudentsFromExcel(){
   let input=document.getElementById("students_file");
   let file=input.files[0];
@@ -867,11 +937,11 @@ async function importStudentsFromExcel(){
   reader.readAsArrayBuffer(file);
 }
 
-/* تشغيل مبدئي */
+// init
 initGrades();
 loadSettings();
 loadStudents();
-renderTeacherAssignments();
+loadUsers();
 </script>
 
 </body>
