@@ -2,56 +2,54 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>نظام النتائج - تسجيل الدخول</title>
+<title>تسجيل الدخول - مدارس الفلاح الأهلية</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
-
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   font-family:Calibri;
-  background:linear-gradient(135deg,#1976d2,#42a5f5);
   margin:0;
-  min-height:100vh;
+  background:linear-gradient(135deg,#1976d2,#42a5f5);
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
+  min-height:100vh;
 }
 .card{
   background:#fff;
   width:360px;
-  max-width:95%;
-  padding:20px 20px 15px;
   border-radius:14px;
-  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+  padding:25px 20px 20px;
   text-align:center;
 }
 h1{
-  margin:0 0 10px;
+  margin:0;
   color:#1976d2;
-  font-size:22px;
+  font-size:24px;
 }
 h2{
-  margin:0 0 15px;
-  color:#d32f2f;
+  margin:5px 0 15px;
+  color:#555;
   font-size:18px;
 }
 label{
   display:block;
   text-align:right;
-  margin-top:8px;
+  margin-top:10px;
   font-weight:bold;
+  color:#333;
 }
-select,input{
+input,select{
   width:100%;
-  box-sizing:border-box;
-  padding:8px;
-  margin-top:4px;
-  border-radius:8px;
+  padding:9px;
+  margin-top:5px;
+  border-radius:7px;
   border:1px solid #999;
-  font-family:Calibri;
-  font-size:15px;
+  font-size:14px;
+  box-sizing:border-box;
 }
 button{
   width:100%;
@@ -59,28 +57,31 @@ button{
   padding:10px;
   border:none;
   border-radius:8px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
   background:#1976d2;
   color:#fff;
-  font-weight:bold;
-  font-size:16px;
-  cursor:pointer;
 }
 button:hover{opacity:0.9}
-
-.footer{
-  margin-top:10px;
+.note{
   font-size:13px;
   color:#555;
-}
-.footer img{
-  margin-top:5px;
-  max-width:160px;
-}
-.small-note{
   margin-top:10px;
+}
+.footer{
+  margin-top:15px;
+  font-size:13px;
+  color:#666;
+}
+.role-hints{
   font-size:12px;
-  color:#444;
+  color:#555;
+  margin-top:8px;
   text-align:right;
+}
+.role-hints div{
+  margin-bottom:3px;
 }
 </style>
 </head>
@@ -88,34 +89,35 @@ button:hover{opacity:0.9}
 
 <div class="card">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>تسجيل الدخول</h2>
+  <h2>نظام رصد الدرجات</h2>
 
-  <label>الدور</label>
-  <select id="role">
-    <option value="super">مشرف عام</option>
-    <option value="admin">مشرف قسم (عرض فقط)</option>
-    <option value="teacher">معلم</option>
-  </select>
-
-  <label>اسم المستخدم</label>
-  <input id="username" placeholder="مثال: admin1 أو t1">
+  <label>البريد الإلكتروني</label>
+  <input id="email" type="email" placeholder="example@school.com">
 
   <label>كلمة المرور</label>
-  <input id="password" type="password" placeholder="••••••">
+  <input id="password" type="password" placeholder="******">
+
+  <label>نوع الحساب</label>
+  <select id="role_select">
+    <option value="teacher">معلم</option>
+    <option value="supervisor">مشرف</option>
+    <option value="admin">مشرف عام</option>
+  </select>
 
   <button onclick="login()">دخول</button>
 
-  <div class="small-note">
-    • المشرف العام: بياناته ثابتة داخل الكود ويمكن تغييرها.<br>
-    • المشرفون والمعلمون: يتم تعريفهم في Firestore داخل المجموعتين
-    <b>admins</b> و <b>teachers</b> باسم مستخدم = ID الوثيقة.
+  <div class="note">
+    في حال وجود مشكلة في الدخول، الرجاء مراجعة المشرف العام للنظام.
+  </div>
+
+  <div class="role-hints">
+    <div>• المعلم: يمكنه رصد درجات فصوله فقط.</div>
+    <div>• المشرف: يتابع المعلمين المحددين له.</div>
+    <div>• المشرف العام: إدارة النظام بالكامل.</div>
   </div>
 
   <div class="footer">
     تصميم محمد عامر أحمد
-    <br>
-    <!-- احفظ صورة التوقيع باسم signature.png بجوار هذا الملف -->
-    <img src="signature.png" alt="توقيع محمد عامر أحمد">
   </div>
 </div>
 
@@ -131,71 +133,60 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
-// super admin credentials (you can change)
-const SUPER_USERNAME = "Muhammad Amer";
-const SUPER_PASSWORD = "20162018";
-
 async function login(){
-  const role=document.getElementById("role").value;
-  const username=document.getElementById("username").value.trim();
-  const password=document.getElementById("password").value.trim();
+  var email=document.getElementById("email").value.trim().toLowerCase();
+  var pass=document.getElementById("password").value.trim();
+  var selectedRole=document.getElementById("role_select").value;
 
-  if(!password || (role!=="super" && !username)){
-    alert("أدخل اسم المستخدم وكلمة المرور");
+  if(!email || !pass){
+    alert("أدخل البريد الإلكتروني وكلمة المرور");
     return;
   }
 
   try{
-    if(role==="super"){
-      if(username===SUPER_USERNAME && password===SUPER_PASSWORD){
-        localStorage.setItem("role","super");
-        localStorage.removeItem("adminId");
-        localStorage.removeItem("teacherId");
-        location="admin.html";
-      }else{
-        alert("بيانات المشرف العام غير صحيحة");
-      }
+    var doc=await db.collection("users").doc(email).get();
+    if(!doc.exists){
+      alert("الحساب غير موجود");
+      return;
+    }
+    var u=doc.data()||{};
+    if(u.role!==selectedRole){
+      alert("نوع الحساب غير مطابق لما هو مسجل للنظام");
+      return;
+    }
+    if(u.active===false){
+      alert("هذا الحساب غير مفعل، راجع المشرف العام");
+      return;
+    }
+    if(u.password!==pass){
+      alert("كلمة المرور غير صحيحة");
       return;
     }
 
-    if(role==="admin"){
-      let doc=await db.collection("admins").doc(username).get();
-      if(!doc.exists){
-        alert("هذا المشرف غير موجود في admins");
-        return;
-      }
-      let data=doc.data()||{};
-      if(data.password!==password){
-        alert("كلمة المرور غير صحيحة");
-        return;
-      }
-      localStorage.setItem("role","admin");
-      localStorage.setItem("adminId",username);
-      localStorage.removeItem("teacherId");
-      location="admin.html"; // نفس لوحة المشرف لكن ستكون عرض فقط
-      return;
+    var currentUser={
+      email:email,
+      name:u.name||"",
+      role:u.role||"",
+      grades:u.grades||[],
+      sections:u.sections||[],
+      subjects:u.subjects||[],
+      teacherEmails:u.teacherEmails||[]
+    };
+    localStorage.setItem("currentUser",JSON.stringify(currentUser));
+
+    if(u.role==="admin"){
+      location.href="admin.html";
+    }else if(u.role==="teacher"){
+      location.href="teacher.html";
+    }else if(u.role==="supervisor"){
+      location.href="supervisor.html";
+    }else{
+      alert("نوع حساب غير معروف في النظام");
     }
 
-    if(role==="teacher"){
-      let doc=await db.collection("teachers").doc(username).get();
-      if(!doc.exists){
-        alert("هذا المعلم غير موجود في teachers");
-        return;
-      }
-      let data=doc.data()||{};
-      if(data.password!==password){
-        alert("كلمة المرور غير صحيحة");
-        return;
-      }
-      localStorage.setItem("role","teacher");
-      localStorage.setItem("teacherId",username);
-      localStorage.removeItem("adminId");
-      location="teacher.html";
-      return;
-    }
   }catch(e){
     console.log(e);
-    alert("خطأ في الاتصال بقاعدة البيانات");
+    alert("خطأ أثناء محاولة تسجيل الدخول");
   }
 }
 </script>
