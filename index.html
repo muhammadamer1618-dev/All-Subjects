@@ -57,9 +57,9 @@ button:hover{ opacity:0.9; }
 }
 .footer img{
   display:block;
-  margin:8px auto 0;
-  width:150px;
-  opacity:0.95;
+  margin:10px auto 0;
+  max-width:160px;
+  opacity:0.9;
 }
 </style>
 
@@ -76,9 +76,18 @@ button:hover{ opacity:0.9; }
 
   <div class="footer">
     تصميم محمد عامر أحمد
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAABr8x+hAAAABHNCSVQICAgIfAhkiAAAFD9JREFUeJzt3c1y2kYWhtHnkEryDxkS7xE2YmEGRWJERWJgERWIuEERGIuEEYzW82E99Z/VxDSHLVbkP4Jrped1vr+tvnvHG83szM7OzOxCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDU0W+vec4p8JrV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vc4jbjjs9ENCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDS0p7Pwz5T7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vc4g7t+DxGQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDR0hLvuzxT7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6uc8htjjv8BCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0tKS77s8U+1ar1er1er1er1er1er1er1er1er1er1er1er1er1er1er1+5yTHG979AQNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NLSke/7PFPtar1er1er1er1er1er1er1er1er1er1er1er1er1er1erzONuOOPwEI0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NKSnvuTxT7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6jrxFk62J+kUNfAAAAAElFTkSuQmCC" />
+    <div id="signature"></div>
   </div>
 </div>
+
+<script>
+/* لو أرسلت توقيع، سيتم وضعه تلقائيًا */
+let savedSig = localStorage.getItem("signature_image");
+if(savedSig){
+  document.getElementById("signature").innerHTML =
+    "<img src='"+savedSig+"' alt='توقيع'>";
+}
+</script>
 
 </body>
 </html>
