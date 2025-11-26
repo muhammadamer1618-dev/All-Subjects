@@ -2,50 +2,51 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مدارس الفلاح الأهلية - نظام رصد الدرجات</title>
+<title>نظام الدرجات - صفحة الدخول</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <style>
-body{font-family:Calibri;background:linear-gradient(135deg,#0d47a1,#1976d2);margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
-.card{background:#fff;border-radius:14px;box-shadow:0 0 14px rgba(0,0,0,0.3);padding:25px;width:360px;text-align:center}
-h1{margin:0 0 5px;color:#0d47a1;font-size:22px}
-h2{margin:0 0 20px;color:#d32f2f;font-size:18px}
-label{display:block;text-align:right;margin:8px 0 3px;font-weight:bold}
-input,select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #999;font-size:15px;box-sizing:border-box}
-button{width:100%;margin-top:15px;padding:10px;border:none;border-radius:8px;background:#1976d2;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
+body{font-family:Calibri;background:#f4f4f4;margin:0}
+.container{max-width:500px;margin:50px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 0 12px rgba(0,0,0,0.15)}
+h1{text-align:center;color:#1976d2;margin-bottom:5px}
+h2{text-align:center;color:#d32f2f;margin-top:0;font-size:18px}
+label{display:block;margin-top:10px;font-weight:bold}
+input{width:100%;padding:8px;margin-top:5px;border-radius:6px;border:1px solid #999;box-sizing:border-box;font-family:Calibri}
+button{width:100%;margin-top:15px;padding:10px;border:none;border-radius:8px;background:#1976d2;color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
 button:hover{opacity:0.9}
-.note{margin-top:10px;font-size:12px;color:#555;text-align:right}
-.footer{margin-top:15px;font-size:12px;color:#555}
+.role-box{display:flex;justify-content:space-between;margin-top:10px}
+.role-box label{font-weight:normal}
+.footer{text-align:center;margin-top:15px;font-size:13px;color:#555}
+.badge{display:inline-block;padding:3px 8px;border-radius:10px;background:#e3f2fd;color:#0d47a1;font-size:12px;margin-top:8px}
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="container">
   <h1>مدارس الفلاح الأهلية</h1>
   <h2>نظام رصد الدرجات</h2>
 
-  <label>البريد الإلكتروني / اسم المستخدم</label>
-  <input id="login_username" placeholder="مثال: 20162018 أو 010096">
-
-  <label>كلمة المرور</label>
-  <input id="login_password" type="password" placeholder="••••••••">
-
-  <label>نوع الحساب</label>
-  <select id="login_role">
-    <option value="teacher">معلم</option>
-    <option value="supervisor">مشرف</option>
-    <option value="admin">مشرف عام</option>
-  </select>
-
-  <button onclick="doLogin()">دخول</button>
-
-  <div class="note">
-    في حال وجود مشكلة في الدخول، الرجاء مراجعة المشرف العام للنظام.
+  <label>اختر نوع المستخدم</label>
+  <div class="role-box">
+    <label><input type="radio" name="role" value="superadmin" checked> مشرف عام</label>
+    <label><input type="radio" name="role" value="supervisor"> مشرف</label>
+    <label><input type="radio" name="role" value="teacher"> معلم</label>
   </div>
 
+  <label>البريد الإلكتروني</label>
+  <input id="email_input" placeholder="example@school.com">
+
+  <label>كلمة المرور</label>
+  <input id="password_input" type="password" placeholder="••••••••">
+
+  <button onclick="login()">دخول</button>
+
   <div class="footer">
-    تصميم محمد عامر أحمد
+    <span class="badge">تصميم محمد عامر أحمد</span>
+    <div style="margin-top:5px">الإصدار 2026</div>
   </div>
 </div>
 
@@ -61,31 +62,51 @@ var firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
-async function doLogin(){
-  let username=document.getElementById("login_username").value.trim();
-  let password=document.getElementById("login_password").value.trim();
-  let role=document.getElementById("login_role").value;
+async function login(){
+  var selectedRole=document.querySelector('input[name="role"]:checked').value;
+  var email=document.getElementById("email_input").value.trim().toLowerCase();
+  var password=document.getElementById("password_input").value.trim();
 
-  if(!username||!password){alert("أدخل اسم المستخدم وكلمة المرور");return;}
+  if(!email || !password){
+    alert("أدخل البريد الإلكتروني وكلمة المرور");
+    return;
+  }
 
   try{
-    let doc=await db.collection("users").doc(username).get();
-    if(!doc.exists){alert("الحساب غير موجود");return;}
+    var doc=await db.collection("users").doc(email).get();
+    if(!doc.exists){
+      alert("المستخدم غير موجود");
+      return;
+    }
+    var data=doc.data() || {};
 
-    let u=doc.data();
-    if(u.role!==role){alert("نوع الحساب غير صحيح لهذا المستخدم");return;}
-    if(u.password!==password){alert("كلمة المرور غير صحيحة");return;}
+    if(data.password!==password){
+      alert("كلمة المرور غير صحيحة");
+      return;
+    }
 
-    if(role==="admin"){
-      location="admin.html?user="+encodeURIComponent(username);
-    }else if(role==="teacher"){
-      location="teacher.html?user="+encodeURIComponent(username);
+    var realRole=data.role || "";
+    if(realRole!==selectedRole){
+      alert("نوع المستخدم المختار لا يطابق الصلاحيات المسجلة لهذا الحساب");
+      return;
+    }
+
+    localStorage.setItem("currentUserEmail", email);
+    localStorage.setItem("currentUserRole", realRole);
+    localStorage.setItem("currentUserName", data.name || "");
+
+    if(realRole==="superadmin"){
+      location="admin.html";
+    }else if(realRole==="supervisor"){
+      location="supervisor.html";
+    }else if(realRole==="teacher"){
+      location="teacher.html";
     }else{
-      location="supervisor.html?user="+encodeURIComponent(username);
+      alert("صلاحية غير معروفة في بيانات المستخدم");
     }
   }catch(e){
     console.log(e);
-    alert("حدث خطأ أثناء تسجيل الدخول");
+    alert("حدث خطأ في تسجيل الدخول");
   }
 }
 </script>
