@@ -2,99 +2,83 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>دخول المشرف - مدارس الفلاح الأهلية</title>
+<title>مدارس الفلاح الأهلية - نظام الدرجات</title>
 <link href="https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
 <style>
 body{
-  font-family: Calibri;
-  background: linear-gradient(135deg,#1976d2,#42a5f5);
-  height:100vh;margin:0;
-  display:flex;align-items:center;justify-content:center;
+  font-family:Calibri;
+  background:#f4f4f4;
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-.card{
-  background:#fff;color:#1565c0;
-  padding:30px 30px 50px 30px;
+.container{
+  background:white;
+  width:420px;
+  padding:25px;
   border-radius:15px;
-  box-shadow:0 0 20px rgba(0,0,0,0.3);
-  width:90%;max-width:400px;text-align:center;
-  position:relative;
+  text-align:center;
+  box-shadow:0 0 12px rgba(0,0,0,0.15);
 }
-h1{margin:0;font-size:28px;font-weight:bold;}
-h2{margin-top:5px;font-size:20px;color:#d32f2f;}
-input,button{
-  width:100%;padding:12px;margin-top:15px;
-  border-radius:8px;border:1px solid #999;
-  font-size:18px;
+h1{
+  color:#1976d2;
+  margin-bottom:5px;
+}
+h2{
+  color:#d32f2f;
+  margin-top:0;
+  margin-bottom:20px;
 }
 button{
-  background:#1976d2;color:#fff;border:none;
-  cursor:pointer;font-weight:bold;
-}
-button:hover{opacity:0.9;}
-a{color:#1976d2;cursor:pointer;display:block;margin-top:10px;}
-.designer-bottom{
-  position:absolute;
-  bottom:8px;
-  left:15px;
-  font-size:14px;
-  color:#0D47A1;
+  display:block;
+  width:100%;
+  padding:12px;
+  font-size:18px;
   font-weight:bold;
+  margin:10px 0;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+}
+.btn-admin{ background:#1976d2; }
+.btn-teacher{ background:#388e3c; }
+.btn-student{ background:#d32f2f; }
+button:hover{ opacity:0.9; }
+
+.footer{
+  margin-top:25px;
+  font-size:15px;
+  color:#444;
+}
+.footer img{
+  display:block;
+  margin:8px auto 0;
+  width:150px;
+  opacity:0.95;
 }
 </style>
+
 </head>
 <body>
 
-<div class="card">
+<div class="container">
   <h1>مدارس الفلاح الأهلية</h1>
-  <h2>تسجيل دخول المشرف</h2>
+  <h2>نظام رصد الدرجات</h2>
 
-  <input id="email" type="email" placeholder="أدخل الإيميل">
-  <input id="pwd" type="password" placeholder="أدخل كلمة المرور">
-  <button onclick="login()">دخول</button>
-  <a onclick="forgotPassword()">نسيت كلمة المرور؟</a>
+  <button class="btn-admin" onclick="location='admin.html'">دخول المشرف</button>
+  <button class="btn-teacher" onclick="location='teacher-login.html'">دخول المعلم</button>
+  <button class="btn-student" onclick="location='student.html'">عرض نتيجة الطالب</button>
 
-  <div class="designer-bottom">تصميم محمد عامر أحمد</div>
+  <div class="footer">
+    تصميم محمد عامر أحمد
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAYAAABr8x+hAAAABHNCSVQICAgIfAhkiAAAFD9JREFUeJzt3c1y2kYWhtHnkEryDxkS7xE2YmEGRWJERWJgERWIuEERGIuEEYzW82E99Z/VxDSHLVbkP4Jrped1vr+tvnvHG83szM7OzOxCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDU0W+vec4p8JrV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vc4jbjjs9ENCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDS0p7Pwz5T7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vc4g7t+DxGQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDR0hLvuzxT7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6uc8htjjv8BCQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0tKS77s8U+1ar1er1er1er1er1er1er1er1er1er1er1er1er1er1er1+5yTHG979AQNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NLSke/7PFPtar1er1er1er1er1er1er1er1er1er1er1er1er1er1erzONuOOPwEI0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NKSnvuTxT7VqvV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6vV6jrxFk62J+kUNfAAAAAElFTkSuQmCC" />
+  </div>
 </div>
-
-<script>
-var firebaseConfig = {
-  apiKey: "AIzaSyC4-cGVb2pHwo6LYiD-UoWtmEEZKQxj4_M",
-  authDomain: "all-subjects-14322.firebaseapp.com",
-  projectId: "all-subjects-14322",
-  storageBucket: "all-subjects-14322.firebasestorage.app",
-  messagingSenderId: "813955287168",
-  appId: "1:813955287168:web:07efa7dde95b117b9bbe65"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-async function login(){
-  const email = document.getElementById('email').value.trim();
-  const pwd = document.getElementById('pwd').value.trim();
-  if(!email || !pwd){ alert("أدخل البريد الإلكتروني وكلمة المرور"); return; }
-  try{
-    await auth.signInWithEmailAndPassword(email, pwd);
-    if(auth.currentUser.email === "muhammadamer1618@gmail.com"){
-      location = "admin.html";
-    }else{
-      alert("ليس لديك صلاحية الدخول");
-      auth.signOut();
-    }
-  }catch(e){
-    alert("خطأ في تسجيل الدخول: " + e.message);
-  }
-}
-
-function forgotPassword(){
-  const email = document.getElementById('email').value.trim();
-  if(!email){ alert("أدخل البريد الإلكتروني أولاً"); return; }
-  auth.sendPasswordResetEmail(email)
-    .then(()=> alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك"))
-    .catch(e=> alert("خطأ أثناء الإرسال: " + e.message));
-}
-</script>
 
 </body>
 </html>
