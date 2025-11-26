@@ -11,9 +11,13 @@
 
 <style>
 body{font-family:Calibri;background:#f4f4f4;margin:0}
-.header{background:#1976d2;color:#fff;text-align:center;padding:15px}
+.header{background:#1976d2;color:#fff;text-align:center;padding:15px;position:relative}
 .header h1{margin:0;font-size:24px}
 .header h2{margin:5px 0 0;font-size:18px;color:#ffeb3b}
+.header .admin-badge{
+  position:absolute;left:15px;top:50%;transform:translateY(-50%);
+  font-size:13px;background:#0d47a1;padding:4px 8px;border-radius:10px;
+}
 .container{max-width:1200px;margin:20px auto;padding:10px}
 .box{background:#fff;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 0 8px rgba(0,0,0,0.1)}
 h3{margin-top:0;color:#1976d2}
@@ -45,6 +49,7 @@ tr:nth-child(even){background:#f9f9f9}
 <div class="header">
   <h1>مدارس الفلاح الأهلية</h1>
   <h2 id="header_exam">لوحة المشرف - نظام رصد الدرجات</h2>
+  <div class="admin-badge" id="admin_badge"></div>
 </div>
 
 <div class="container">
@@ -150,7 +155,6 @@ tr:nth-child(even){background:#f9f9f9}
       حفظ درجات الصف بالكامل
     </button>
 
-    <!-- الأزرار الجديدة لتفريغ الدرجات -->
     <button id="clear_one_subject_btn" class="btn-danger" style="margin-top:10px;display:none;" onclick="clearOneSubjectForCurrentGrade()">
       تفريغ مادة واحدة لهذا الصف
     </button>
@@ -164,6 +168,7 @@ tr:nth-child(even){background:#f9f9f9}
     <button class="btn-secondary" onclick="exportToExcel()">تصدير Excel</button>
     <button class="btn-secondary" onclick="location='index.html'">الصفحة الرئيسية</button>
     <button class="btn-secondary" onclick="location='student.html'">صفحة الطالب</button>
+    <button class="btn-danger" style="float:left" onclick="adminLogout()">تسجيل خروج المشرف</button>
   </div>
 
 </div>
@@ -179,6 +184,20 @@ var firebaseConfig={
 };
 firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
+
+// فحص تسجيل دخول المشرف
+var adminId=localStorage.getItem("admin_id");
+var adminName=localStorage.getItem("admin_name")||"";
+if(!adminId){
+  location="admin-login.html";
+}
+document.getElementById("admin_badge").innerText=adminName?("المشرف: "+adminName):("المشرف: "+adminId);
+
+function adminLogout(){
+  localStorage.removeItem("admin_id");
+  localStorage.removeItem("admin_name");
+  location="admin-login.html";
+}
 
 var gradesList=[
   "1 ابتدائي","2 ابتدائي","3 ابتدائي","4 ابتدائي","5 ابتدائي","6 ابتدائي",
