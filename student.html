@@ -48,7 +48,7 @@ th{background:#1976d2;color:white;font-size:17px}
   <h1>مدارس الفلاح الأهلية</h1>
   <h2 id="exam_type">—</h2>
 
-  <!-- بيانات الطالب -->
+  <!-- Student info -->
   <table id="student_info" style="display:none;">
     <tr><th>البيان</th><th>القيمة</th></tr>
     <tr><td class="red">اسم الطالب</td><td id="st_name" class="blue"></td></tr>
@@ -57,7 +57,7 @@ th{background:#1976d2;color:white;font-size:17px}
     <tr><td class="red">الشعبة</td><td id="st_section" class="blue"></td></tr>
   </table>
 
-  <!-- جدول المواد -->
+  <!-- Subjects table -->
   <table id="subjects_table" style="display:none;">
     <thead>
       <tr>
@@ -66,12 +66,13 @@ th{background:#1976d2;color:white;font-size:17px}
         <th>الدرجة النهائية</th>
         <th>النسبة</th>
         <th>التقدير</th>
+        <th>الملاحظة</th>
       </tr>
     </thead>
     <tbody id="subjects_body"></tbody>
   </table>
 
-  <!-- جدول التقدير العام -->
+  <!-- Summary table -->
   <table id="summary_table" style="display:none;">
     <tr><th>المجموع الكلي</th><th>التقدير العام</th></tr>
     <tr>
@@ -80,13 +81,13 @@ th{background:#1976d2;color:white;font-size:17px}
     </tr>
   </table>
 
-  <!-- توقيع رئيس الإشراف -->
+  <!-- Supervisor sign -->
   <table id="supervisor_table" style="display:none;margin-top:20px;">
     <tr><th>رئيس الإشراف التربوي</th></tr>
     <tr><td class="blue">أحمد سمير عباس</td></tr>
   </table>
 
-  <!-- توقيع المدير -->
+  <!-- Manager sign -->
   <table id="manager_table" style="display:none;margin-top:20px;">
     <tr><th>مدير المدرسة</th></tr>
     <tr><td class="blue">سعيد بن علي الجمعان</td></tr>
@@ -137,7 +138,7 @@ async function loadStudent(){
   document.getElementById("st_section").innerText=d.section||"";
   document.getElementById("student_info").style.display="table";
 
-  // جلب قالب مواد الصف من الإعدادات
+  // get subjects template for this grade
   let grade=d.grade||"";
   let templateDoc=await db.collection("settings").doc("subjects_"+grade).get();
   let allowedSubjects=[];
@@ -159,6 +160,7 @@ async function loadStudent(){
     let f=subs[subName].fullMark||0;
     let p=f?((m/f)*100).toFixed(0):0;
     let r=getRate(p);
+    let note=subs[subName].note||"";
 
     total+=Number(m);
     totalFull+=Number(f);
@@ -170,7 +172,8 @@ async function loadStudent(){
       "<td>"+m+"</td>"+
       "<td>"+f+"</td>"+
       "<td>"+p+"%</td>"+
-      "<td>"+r+"</td>";
+      "<td>"+r+"</td>"+
+      "<td>"+note+"</td>";
     body.appendChild(tr);
   });
 
