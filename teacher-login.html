@@ -10,39 +10,35 @@
 
 <style>
 body{font-family:Calibri;background:#f4f4f4;margin:0;padding:20px}
-.container{max-width:450px;margin:60px auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.15)}
-h1{text-align:center;color:#1976d2;margin-bottom:5px}
-h2{text-align:center;color:#555;margin-top:0;font-size:18px}
+.container{max-width:400px;margin:60px auto;background:white;padding:20px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.2);text-align:center}
+h1{color:#1976d2;margin-bottom:20px}
 label{display:block;margin-top:10px;font-weight:bold}
-input{padding:9px;font-size:15px;width:100%;border-radius:8px;border:1px solid #999;box-sizing:border-box;margin-top:5px}
-button{padding:10px 15px;border:none;border-radius:8px;background:#1976d2;color:white;font-size:16px;font-weight:bold;cursor:pointer;margin-top:15px;width:100%}
+input{padding:8px;font-size:16px;width:100%;border-radius:8px;border:1px solid #999;margin-top:5px}
+button{margin-top:15px;padding:10px 20px;border:none;border-radius:8px;background:#1976d2;color:white;font-size:16px;font-weight:bold;cursor:pointer;width:100%}
 button:hover{opacity:0.9}
-.error{color:#d32f2f;margin-top:10px;text-align:center;font-size:14px}
-.info{text-align:center;font-size:13px;color:#555;margin-top:15px}
-.link-btn{background:#757575;margin-top:8px}
+.info{margin-top:15px;font-size:14px;color:#555}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>مدارس الفلاح الأهلية</h1>
-  <h2>دخول المعلم</h2>
+  <h1>دخول المعلم</h1>
 
-  <label>البريد الإلكتروني للمعلم</label>
-  <input id="email_input" type="email" placeholder="example@school.com">
+  <label>كود المعلم</label>
+  <input id="t_code" placeholder="مثال: T001">
 
   <label>كلمة المرور</label>
-  <input id="password_input" type="password" placeholder="••••••••">
+  <input id="t_password" type="password" placeholder="******">
 
   <button onclick="loginTeacher()">دخول</button>
 
-  <div id="error_box" class="error"></div>
-
   <div class="info">
-    بيانات الدخول يتم إنشاؤها من قبل المشرف عبر Firestore (مجموعة teachers).
+    يتم الحصول على كود المعلم والصلاحيات من لوحة المشرف.
   </div>
 
-  <button class="link-btn" onclick="location='index.html'">الصفحة الرئيسية</button>
+  <div style="margin-top:10px">
+    <button onclick="location='index.html'" style="background:#757575">الصفحة الرئيسية</button>
+  </div>
 </div>
 
 <script>
@@ -54,41 +50,31 @@ var firebaseConfig={
   messagingSenderId:"813955287168",
   appId:"1:813955287168:web:07efa7dde95b117b9bbe65"
 };
-if(!firebase.apps.length){firebase.initializeApp(firebaseConfig);}
+firebase.initializeApp(firebaseConfig);
 var db=firebase.firestore();
 
 async function loginTeacher(){
-  var email=document.getElementById("email_input").value.trim().toLowerCase();
-  var pass=document.getElementById("password_input").value.trim();
-  var errorBox=document.getElementById("error_box");
-  errorBox.innerText="";
-
-  if(!email || !pass){
-    errorBox.innerText="أدخل البريد الإلكتروني وكلمة المرور";
+  let code=document.getElementById("t_code").value.trim();
+  let password=document.getElementById("t_password").value.trim();
+  if(!code || !password){
+    alert("أدخل كود المعلم وكلمة المرور");
     return;
   }
 
-  try{
-    var doc=await db.collection("teachers").doc(email).get();
-    if(!doc.exists){
-      errorBox.innerText="بيانات الدخول غير صحيحة";
-      return;
-    }
-    var data=doc.data()||{};
-    if(data.password!==pass){
-      errorBox.innerText="بيانات الدخول غير صحيحة";
-      return;
-    }
-
-    localStorage.setItem("teacherEmail",email);
-    localStorage.setItem("teacherName",data.name||"");
-    localStorage.setItem("teacherAssignments",JSON.stringify(data.assignments||[]));
-
-    location.href="teacher.html";
-  }catch(e){
-    console.log(e);
-    errorBox.innerText="خطأ أثناء محاولة تسجيل الدخول";
+  let doc=await db.collection("teachers").doc(code).get();
+  if(!doc.exists){
+    alert("المعلم غير موجود");
+    return;
   }
+
+  let d=doc.data();
+  if((d.password||"")!==password){
+    alert("كلمة المرور غير صحيحة");
+    return;
+  }
+
+  localStorage.setItem("teacher_code", d.code);
+  location="teacher.html";
 }
 </script>
 
